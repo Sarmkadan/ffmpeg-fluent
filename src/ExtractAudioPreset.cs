@@ -1,5 +1,8 @@
 namespace FFmpegFluent;
 
+/// <summary>
+/// Represents a preset for extracting audio from a video file using FFmpeg.
+/// </summary>
 public sealed class ExtractAudioPreset
 {
     private readonly string _inputPath;
@@ -9,18 +12,33 @@ public sealed class ExtractAudioPreset
     private int? _streamIndex;
     private bool _copyStream;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="ExtractAudioPreset"/> class.
+    /// </summary>
+    /// <param name="inputPath">The path to the input video file.</param>
+    /// <param name="outputPath">The path to the output audio file.</param>
     public ExtractAudioPreset(string inputPath, string outputPath)
     {
         _inputPath = inputPath ?? throw new ArgumentNullException(nameof(inputPath));
         _outputPath = outputPath ?? throw new ArgumentNullException(nameof(outputPath));
     }
 
+    /// <summary>
+    /// Configures the audio codec to use for extraction.
+    /// </summary>
+    /// <param name="codec">The audio codec to use.</param>
+    /// <returns>The current instance of <see cref="ExtractAudioPreset"/>.</returns>
     public ExtractAudioPreset WithCodec(string codec)
     {
         _codec = codec ?? throw new ArgumentNullException(nameof(codec));
         return this;
     }
 
+    /// <summary>
+    /// Configures the bitrate of the extracted audio.
+    /// </summary>
+    /// <param name="kbps">The bitrate in kilobits per second.</param>
+    /// <returns>The current instance of <see cref="ExtractAudioPreset"/>.</returns>
     public ExtractAudioPreset WithBitrate(int kbps)
     {
         if (kbps <= 0)
@@ -32,12 +50,21 @@ public sealed class ExtractAudioPreset
         return this;
     }
 
+    /// <summary>
+    /// Configures the extraction to copy the audio stream instead of re-encoding it.
+    /// </summary>
+    /// <returns>The current instance of <see cref="ExtractAudioPreset"/>.</returns>
     public ExtractAudioPreset CopyStream()
     {
         _copyStream = true;
         return this;
     }
 
+    /// <summary>
+    /// Configures the stream index of the audio to extract.
+    /// </summary>
+    /// <param name="index">The stream index of the audio to extract.</param>
+    /// <returns>The current instance of <see cref="ExtractAudioPreset"/>.</returns>
     public ExtractAudioPreset StreamIndex(int index)
     {
         if (index < 0)
@@ -49,6 +76,10 @@ public sealed class ExtractAudioPreset
         return this;
     }
 
+    /// <summary>
+    /// Builds the FFmpeg arguments for extracting the audio.
+    /// </summary>
+    /// <returns>An array of FFmpeg arguments.</returns>
     public string[] BuildArguments()
     {
         var args = new List<string>();
@@ -89,6 +120,12 @@ public sealed class ExtractAudioPreset
         return args.ToArray();
     }
 
+    /// <summary>
+    /// Runs the FFmpeg command to extract the audio.
+    /// </summary>
+    /// <param name="ffmpegPath">The path to the FFmpeg executable.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task RunAsync(string ffmpegPath = "ffmpeg", CancellationToken ct = default)
     {
         var arguments = BuildArguments();
