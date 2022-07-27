@@ -10,11 +10,11 @@ namespace FFmpegFluent;
 
 public sealed class FFmpegCommand
 {
-    private readonly string _ffmpegPath;
-    private readonly List<InputFile> _inputs = [];
-    private readonly List<OutputFile> _outputs = [];
-    private readonly FilterGraph _filterGraph = new();
-    private readonly List<string> _globalOptions = [];
+    internal readonly string _ffmpegPath;
+    internal readonly List<InputFile> _inputs = [];
+    internal readonly List<OutputFile> _outputs = [];
+    internal readonly FilterGraph _filterGraph = new();
+    internal readonly List<string> _globalOptions = [];
 
     private FFmpegCommand(string ffmpegPath)
     {
