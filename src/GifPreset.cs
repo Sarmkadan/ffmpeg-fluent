@@ -4,6 +4,9 @@ using System.Threading.Tasks;
 
 namespace FFmpegFluent;
 
+/// <summary>
+/// Represents a preset for creating GIFs using FFmpeg.
+/// </summary>
 public sealed class GifPreset
 {
     private readonly string _inputPath;
@@ -13,6 +16,11 @@ public sealed class GifPreset
     private TimeSpan? _start;
     private TimeSpan? _duration;
 
+    /// <summary>
+    /// Initializes a new instance of the <see cref="GifPreset"/> class.
+    /// </summary>
+    /// <param name="inputPath">The path to the input file.</param>
+    /// <param name="outputPath">The path to the output file.</param>
     public GifPreset(string inputPath, string outputPath)
     {
         ArgumentException.ThrowIfNullOrEmpty(inputPath);
@@ -22,6 +30,11 @@ public sealed class GifPreset
         _outputPath = outputPath;
     }
 
+    /// <summary>
+    /// Sets the frames per second (FPS) for the GIF.
+    /// </summary>
+    /// <param name="fps">The FPS value.</param>
+    /// <returns>The current instance of the <see cref="GifPreset"/> class.</returns>
     public GifPreset WithFps(int fps)
     {
         if (fps <= 0)
@@ -33,6 +46,11 @@ public sealed class GifPreset
         return this;
     }
 
+    /// <summary>
+    /// Sets the width of the GIF.
+    /// </summary>
+    /// <param name="width">The width value.</param>
+    /// <returns>The current instance of the <see cref="GifPreset"/> class.</returns>
     public GifPreset WithWidth(int width)
     {
         if (width <= 0)
@@ -44,6 +62,12 @@ public sealed class GifPreset
         return this;
     }
 
+    /// <summary>
+    /// Sets the time range for the GIF.
+    /// </summary>
+    /// <param name="start">The start time.</param>
+    /// <param name="duration">The duration.</param>
+    /// <returns>The current instance of the <see cref="GifPreset"/> class.</returns>
     public GifPreset WithRange(TimeSpan start, TimeSpan duration)
     {
         if (start < TimeSpan.Zero)
@@ -66,6 +90,10 @@ public sealed class GifPreset
         return this;
     }
 
+    /// <summary>
+    /// Builds the arguments for the FFmpeg command.
+    /// </summary>
+    /// <returns>An array of arguments for the FFmpeg command.</returns>
     public string[] BuildArguments()
     {
         var args = new System.Collections.Generic.List<string>();
@@ -112,6 +140,12 @@ public sealed class GifPreset
         return args.ToArray();
     }
 
+    /// <summary>
+    /// Runs the FFmpeg command to create the GIF.
+    /// </summary>
+    /// <param name="ffmpegPath">The path to the FFmpeg executable.</param>
+    /// <param name="ct">The cancellation token.</param>
+    /// <returns>A task representing the asynchronous operation.</returns>
     public async Task RunAsync(string ffmpegPath = "ffmpeg", CancellationToken ct = default)
     {
         var arguments = BuildArguments();
