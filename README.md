@@ -38,3 +38,28 @@ var smartThumbnail = new ThumbnailPreset("input.mp4", "smart.jpg")
 await smartThumbnail.RunAsync();
 ```
 
+## WatermarkHelper
+
+The `WatermarkHelper` type allows you to create a watermark filter for your FFmpeg command. You can specify the source image, opacity, and scale of the watermark.
+
+### Example usage:
+
+```csharp
+using FFmpegFluent;
+
+// Create a watermark with a 50% opacity and 0.5 scale
+var watermark = new WatermarkHelper("watermark.png")
+    .WithOpacity(0.5)
+    .WithScale(0.5);
+
+// Build the filter complex string
+var filterComplex = watermark.BuildFilterComplex();
+
+// Build the FFmpeg arguments
+var arguments = watermark.BuildArguments();
+
+// Execute the watermark creation
+await watermark.RunAsync();
+```
+
+```
