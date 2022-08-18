@@ -1,0 +1,7 @@
+
+## GifPreset
+
+The `GifPreset` type allows you to configure the creation of a GIF from a video file.
+
+### Example usage:
+

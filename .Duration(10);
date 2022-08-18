@@ -1,0 +1,7 @@
+
+## ThumbnailPreset
+
+The `ThumbnailPreset` type allows you to configure the creation of thumbnails from a video file.
+
+### Example usage:
+

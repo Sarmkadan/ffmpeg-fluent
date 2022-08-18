@@ -1,0 +1,7 @@
+
+## ConcatPreset
+
+The `ConcatPreset` type allows you to configure the concatenation of multiple input files into a single output file.
+
+### Example usage:
+

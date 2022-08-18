@@ -1,0 +1,7 @@
+
+## VideoOptions
+
+The `VideoOptions` type allows you to configure video settings for your FFmpeg command. You can specify the codec, bitrate, quality (CRF), preset, frame rate, resolution, or disable video altogether.
+
+### Example usage:
+
