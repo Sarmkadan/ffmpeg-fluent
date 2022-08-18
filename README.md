@@ -49,6 +49,7 @@ using FFmpegFluent;
 
 // Create a watermark with a 50% opacity and 0.5 scale
 var watermark = new WatermarkHelper("watermark.png")
+    .At("input.mp4") // Specify the source image
     .WithOpacity(0.5)
     .WithScale(0.5);
 
