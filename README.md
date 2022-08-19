@@ -59,8 +59,14 @@ var filterComplex = watermark.BuildFilterComplex();
 // Build the FFmpeg arguments
 var arguments = watermark.BuildArguments();
 
-// Execute the watermark creation
-await watermark.RunAsync();
+// Create a new ThumbnailPreset with the watermark
+var thumbnail = new ThumbnailPreset("output.jpg", "output_with_watermark.jpg")
+    .AtTime(TimeSpan.FromMinutes(2.5))
+    .WithSize(800, 600)
+    .WithWatermark(filterComplex);
+
+// Execute the thumbnail extraction
+await thumbnail.RunAsync();
 ```
 
 ```
