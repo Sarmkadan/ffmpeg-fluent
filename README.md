@@ -69,6 +69,28 @@ var thumbnail = new ThumbnailPreset("output.jpg", "output_with_watermark.jpg")
 await thumbnail.RunAsync();
 ```
 
+## InputFile
+
+The `InputFile` type represents a media file that can be fed into an FFmpeg command. It exposes fluent methods to set common FFmpeg input options such as seek position, duration, loop count, and arbitrary options. The `BuildArgs` method returns the command‑line arguments that FFmpeg expects for this input.
+
+### Example usage:
+
+```csharp
+using FFmpegFluent;
+
+// Create an input file with a seek offset, duration, loop count and a custom option
+var input = new InputFile("input.mp4")
+    .Seek(TimeSpan.FromSeconds(5))
+    .Duration(TimeSpan.FromMinutes(1))
+    .Loop(2)
+    .Option("someOption", "value");
+
+// Retrieve the FFmpeg arguments for this input
+var args = input.BuildArgs();
+
+// args can be passed to a command builder or executed directly
+```
+
 ## ExtractAudioPreset
 
 The `ExtractAudioPreset` type allows you to extract audio from a video file. You can specify the codec, bitrate, and stream index of the audio to extract.
@@ -90,4 +112,3 @@ var arguments = extractAudio.BuildArguments();
 // Execute the audio extraction
 await extractAudio.RunAsync();
 ```
-
