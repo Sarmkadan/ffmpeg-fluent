@@ -69,4 +69,25 @@ var thumbnail = new ThumbnailPreset("output.jpg", "output_with_watermark.jpg")
 await thumbnail.RunAsync();
 ```
 
+## ExtractAudioPreset
+
+The `ExtractAudioPreset` type allows you to extract audio from a video file. You can specify the codec, bitrate, and stream index of the audio to extract.
+
+### Example usage:
+
+```csharp
+using FFmpegFluent;
+
+// Extract audio with the default codec and bitrate
+var extractAudio = new ExtractAudioPreset("input.mp4")
+    .WithCodec("copy") // Use the default codec
+    .WithBitrate(128000) // Set the bitrate to 128 kbps
+    .StreamIndex(0); // Extract the first audio stream
+
+// Build the FFmpeg arguments
+var arguments = extractAudio.BuildArguments();
+
+// Execute the audio extraction
+await extractAudio.RunAsync();
 ```
+
