@@ -112,3 +112,31 @@ var arguments = extractAudio.BuildArguments();
 // Execute the audio extraction
 await extractAudio.RunAsync();
 ```
+
+## OutputFile
+
+The `OutputFile` type represents the destination file for an FFmpeg command. It lets you specify video and audio options, format, overwrite behavior, custom options, and metadata before building the final argument list.
+
+### Example usage:
+
+```csharp
+using FFmpegFluent;
+
+// Create an output file and configure video/audio options
+var output = new OutputFile("output.mp4")
+    .WithVideo(new VideoOptions()
+        .Codec("libx264")
+        .Bitrate(2000000))
+    .WithAudio(new AudioOptions()
+        .SampleRate(44100)
+        .Channels(2))
+    .Format("mp4")
+    .Overwrite()
+    .Option("someOption", "value")
+    .Metadata("title", "My Video");
+
+// Build the FFmpeg arguments for the output
+var args = output.BuildArgs();
+
+// args can be passed to a command builder or executed directly
+```
