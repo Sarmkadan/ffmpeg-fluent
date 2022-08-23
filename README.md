@@ -140,3 +140,21 @@ var args = output.BuildArgs();
 
 // args can be passed to a command builder or executed directly
 ```
+
+## ConcatPreset
+
+The `ConcatPreset` type allows you to concatenate multiple media files into a single output. It supports adding input files, optionally re‑encoding them, and building the concat list content used by FFmpeg. The `RunAsync` method executes the concatenation asynchronously.
+
+### Example usage:
+
+```csharp
+using FFmpegFluent;
+
+// Create a concatenation preset, add two input files, enable re‑encoding, and run
+var concat = new ConcatPreset()
+    .AddInput("input1.mp4")
+    .AddInput("input2.mp4")
+    .WithReencode();
+
+await concat.RunAsync();
+```
