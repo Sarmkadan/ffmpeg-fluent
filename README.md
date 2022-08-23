@@ -202,3 +202,28 @@ if (exitCode == 0)
     Console.WriteLine("Command completed successfully!");
 }
 ```
+
+## MediaInfo
+
+The `MediaInfo` type provides a way to retrieve information about a media file. You can use it to get the duration, bitrate, video and audio codecs, dimensions, frame rate, and other metadata.
+
+### Example usage:
+
+```csharp
+using FFmpegFluent;
+
+// Probe the media info of a file
+var mediaInfo = await MediaInfo.ProbeAsync("input.mp4");
+
+// Print the media info
+Console.WriteLine($"Duration: {mediaInfo.Duration}");
+Console.WriteLine($"Bitrate: {mediaInfo.BitRate}");
+Console.WriteLine($"Video codec: {mediaInfo.VideoCodec}");
+Console.WriteLine($"Audio codec: {mediaInfo.AudioCodec}");
+Console.WriteLine($"Width: {mediaInfo.Width}");
+Console.WriteLine($"Height: {mediaInfo.Height}");
+Console.WriteLine($"Frame rate: {mediaInfo.FrameRate}");
+Console.WriteLine($"Audio channels: {mediaInfo.AudioChannels}");
+Console.WriteLine($"Sample rate: {mediaInfo.SampleRate}");
+Console.WriteLine($"Format name: {mediaInfo.FormatName}");
+```
