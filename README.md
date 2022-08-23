@@ -158,3 +158,47 @@ var concat = new ConcatPreset()
 
 await concat.RunAsync();
 ```
+
+## FFmpegCommand
+
+The `FFmpegCommand` type provides a fluent interface for building and executing FFmpeg commands. It allows you to add input files, configure filter graphs, add output files, set global options, build the complete command line, and execute the command asynchronously with progress reporting and cancellation support.
+
+### Example usage:
+
+```csharp
+using FFmpegFluent;
+
+// Create a new FFmpeg command
+var command = FFmpegCommand.Create()
+    .AddInput("input.mp4", input => input
+        .Seek(TimeSpan.FromSeconds(5))
+        .Duration(TimeSpan.FromMinutes(1)))
+    .WithFilterGraph(graph => graph
+        .Scale(1280, 720)
+        .Fps(30))
+    .AddOutput("output.mp4", output => output
+        .WithVideo(video => video
+            .Codec("libx264")
+            .Bitrate(2000000))
+        .WithAudio(audio => audio
+            .SampleRate(44100)
+            .Channels(2)))
+    .GlobalOption("y") // Overwrite output file if it exists
+    .GlobalOption("hide_banner")
+    .GlobalOption("loglevel", "error");
+
+// Build the complete command line
+var commandLine = command.BuildCommandLine();
+Console.WriteLine(commandLine);
+
+// Execute the command with progress reporting
+var progress = new Progress<FFmpegProgress>(progress =>
+    Console.WriteLine($"Progress: {progress.Percent}% - {progress.CurrentTime}/{progress.TotalTime}"));
+
+var exitCode = await command.RunAsync(progress);
+
+if (exitCode == 0)
+{
+    Console.WriteLine("Command completed successfully!");
+}
+```
