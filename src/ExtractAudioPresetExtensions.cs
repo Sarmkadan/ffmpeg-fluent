@@ -1,5 +1,8 @@
 namespace FFmpegFluent
 {
+    /// <summary>
+    /// Provides extension methods for configuring audio extraction presets.
+    /// </summary>
     public static class ExtractAudioPresetExtensions
     {
         /// <summary>
@@ -7,11 +10,10 @@ namespace FFmpegFluent
         /// </summary>
         /// <param name="preset">The preset instance.</param>
         /// <returns>A new preset instance with MP3 codec and 192 kbps bitrate configured.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
         public static ExtractAudioPreset AsMp3(this ExtractAudioPreset preset)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
+            ArgumentNullException.ThrowIfNull(preset);
             return preset.WithCodec("libmp3lame").WithBitrate(192);
         }
 
@@ -20,11 +22,10 @@ namespace FFmpegFluent
         /// </summary>
         /// <param name="preset">The preset instance.</param>
         /// <returns>A new preset instance with AAC codec and 128 kbps bitrate configured.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
         public static ExtractAudioPreset AsAac(this ExtractAudioPreset preset)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
+            ArgumentNullException.ThrowIfNull(preset);
             return preset.WithCodec("aac").WithBitrate(128);
         }
 
@@ -33,11 +34,10 @@ namespace FFmpegFluent
         /// </summary>
         /// <param name="preset">The preset instance.</param>
         /// <returns>A new preset instance with FLAC codec configured for lossless output.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
         public static ExtractAudioPreset AsFlac(this ExtractAudioPreset preset)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
+            ArgumentNullException.ThrowIfNull(preset);
             return preset.WithCodec("flac");
         }
 
@@ -46,11 +46,10 @@ namespace FFmpegFluent
         /// </summary>
         /// <param name="preset">The preset instance.</param>
         /// <returns>A new preset instance with PCM_S16LE codec configured for WAV output.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
         public static ExtractAudioPreset AsWav(this ExtractAudioPreset preset)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
+            ArgumentNullException.ThrowIfNull(preset);
             return preset.WithCodec("pcm_s16le");
         }
 
@@ -60,11 +59,12 @@ namespace FFmpegFluent
         /// <param name="preset">The preset instance.</param>
         /// <param name="bitrateKbps">The target bitrate in kilobits per second.</param>
         /// <returns>The preset instance with the specified bitrate configured.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="bitrateKbps"/> is not positive.</exception>
         public static ExtractAudioPreset WithBitrate(this ExtractAudioPreset preset, int bitrateKbps)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
+            ArgumentNullException.ThrowIfNull(preset);
+            ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bitrateKbps);
             return preset.WithBitrate(bitrateKbps);
         }
 
@@ -73,11 +73,10 @@ namespace FFmpegFluent
         /// </summary>
         /// <param name="preset">The preset instance.</param>
         /// <returns>The preset instance configured to copy the audio stream.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
         public static ExtractAudioPreset CopyAudioStream(this ExtractAudioPreset preset)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
+            ArgumentNullException.ThrowIfNull(preset);
             return preset.CopyStream();
         }
 
@@ -87,11 +86,12 @@ namespace FFmpegFluent
         /// <param name="preset">The preset instance.</param>
         /// <param name="streamIndex">The zero-based index of the audio stream to extract.</param>
         /// <returns>The preset instance configured to extract the specified stream.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="streamIndex"/> is negative.</exception>
         public static ExtractAudioPreset FromStream(this ExtractAudioPreset preset, int streamIndex)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
+            ArgumentNullException.ThrowIfNull(preset);
+            ArgumentOutOfRangeException.ThrowIfNegative(streamIndex);
             return preset.StreamIndex(streamIndex);
         }
     }
