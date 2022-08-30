@@ -10,19 +10,17 @@ public static class FFmpegCommandValidation
     /// Validates the FFmpegCommand instance and returns a list of human-readable problems.
     /// Checks for null/empty inputs and outputs, empty filter graphs, and invalid paths.
     /// </summary>
-    /// <param name="value">The FFmpegCommand to validate</param>
-    /// <returns>List of validation problems (empty if valid)</returns>
+    /// <param name="value">The FFmpegCommand to validate.</param>
+    /// <returns>List of validation problems (empty if valid).</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static IReadOnlyList<string> Validate(this FFmpegCommand value)
     {
-        if (value == null)
-        {
-            return new[] { "FFmpegCommand cannot be null." };
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         var problems = new List<string>();
 
         // Validate inputs
-        if (value._inputs == null)
+        if (value._inputs is null)
         {
             problems.Add("Input collection cannot be null.");
         }
@@ -34,7 +32,7 @@ public static class FFmpegCommandValidation
         {
             foreach (var input in value._inputs)
             {
-                if (input == null)
+                if (input is null)
                 {
                     problems.Add("Input file cannot be null.");
                     break;
@@ -49,7 +47,7 @@ public static class FFmpegCommandValidation
         }
 
         // Validate outputs
-        if (value._outputs == null)
+        if (value._outputs is null)
         {
             problems.Add("Output collection cannot be null.");
         }
@@ -61,7 +59,7 @@ public static class FFmpegCommandValidation
         {
             foreach (var output in value._outputs)
             {
-                if (output == null)
+                if (output is null)
                 {
                     problems.Add("Output file cannot be null.");
                     break;
@@ -76,13 +74,9 @@ public static class FFmpegCommandValidation
         }
 
         // Validate filter graph
-        if (value._filterGraph == null)
+        if (value._filterGraph is null)
         {
             problems.Add("Filter graph cannot be null.");
-        }
-        else if (value._filterGraph.IsEmpty)
-        {
-            // Empty filter graph is valid (not required)
         }
 
         return problems.AsReadOnly();
@@ -91,18 +85,18 @@ public static class FFmpegCommandValidation
     /// <summary>
     /// Determines whether the FFmpegCommand instance is valid.
     /// </summary>
-    /// <param name="value">The FFmpegCommand to validate</param>
-    /// <returns>True if valid; otherwise false</returns>
+    /// <param name="value">The FFmpegCommand to validate.</param>
+    /// <returns>True if valid; otherwise false.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static bool IsValid(this FFmpegCommand value)
-    {
-        return value.Validate().Count == 0;
-    }
+        => value.Validate().Count == 0;
 
     /// <summary>
-    /// Ensures the FFmpegCommand instance is valid, throwing ArgumentException if not.
+    /// Ensures the FFmpegCommand instance is valid, throwing <see cref="ArgumentException"/> if not.
     /// </summary>
-    /// <param name="value">The FFmpegCommand to validate</param>
-    /// <exception cref="ArgumentException">Thrown when validation fails</exception>
+    /// <param name="value">The FFmpegCommand to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    /// <exception cref="ArgumentException">Thrown when validation fails.</exception>
     public static void EnsureValid(this FFmpegCommand value)
     {
         var problems = value.Validate();
