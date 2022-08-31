@@ -24,8 +24,10 @@ namespace FFmpegFluent
         /// <param name="options">The original hardware acceleration options.</param>
         /// <param name="device">The device identifier to use.</param>
         /// <returns>A new <see cref="HardwareAccelOptions"/> instance with the updated device.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is <see langword="null"/>.</exception>
         public static HardwareAccelOptions WithDevice(this HardwareAccelOptions options, string device)
         {
+            ArgumentNullException.ThrowIfNull(options);
             return new HardwareAccelOptions
             {
                 Kind = options.Kind,
@@ -50,8 +52,10 @@ namespace FFmpegFluent
         /// <param name="options">The hardware acceleration options.</param>
         /// <param name="defaultDevice">The default device path to return if none is specified. Defaults to "/dev/dri/renderD128".</param>
         /// <returns>The device path, or the default if not specified.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="defaultDevice"/> is <see langword="null"/>.</exception>
         public static string GetDevicePath(this HardwareAccelOptions? options, string defaultDevice = "/dev/dri/renderD128")
         {
+            ArgumentNullException.ThrowIfNull(defaultDevice);
             return options?.Device ?? defaultDevice;
         }
     }
