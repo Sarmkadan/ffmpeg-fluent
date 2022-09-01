@@ -3,6 +3,9 @@ namespace FFmpegFluent;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+/// <summary>
+/// Provides JSON serialization and deserialization extension methods for <see cref="ExtractAudioPreset"/> objects.
+/// </summary>
 public static class ExtractAudioPresetJsonExtensions
 {
     private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
@@ -12,6 +15,13 @@ public static class ExtractAudioPresetJsonExtensions
         DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
     };
 
+    /// <summary>
+    /// Serializes an <see cref="ExtractAudioPreset"/> instance to a JSON string.
+    /// </summary>
+    /// <param name="value">The <see cref="ExtractAudioPreset"/> instance to serialize.</param>
+    /// <param name="indented">If true, the JSON output will be formatted with indentation for readability.</param>
+    /// <returns>A JSON string representation of the <see cref="ExtractAudioPreset"/>.</returns>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static string ToJson(this ExtractAudioPreset value, bool indented = false)
     {
         if (value == null)
@@ -29,6 +39,13 @@ public static class ExtractAudioPresetJsonExtensions
         return JsonSerializer.Serialize(value, options);
     }
 
+    /// <summary>
+    /// Deserializes a JSON string into an <see cref="ExtractAudioPreset"/> instance.
+    /// </summary>
+    /// <param name="json">The JSON string to deserialize.</param>
+    /// <returns>The deserialized <see cref="ExtractAudioPreset"/> instance, or null if <paramref name="json"/> is null or whitespace.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or whitespace.</exception>
+    /// <exception cref="JsonException">Thrown when deserialization fails, wrapped with a message.</exception>
     public static ExtractAudioPreset? FromJson(string json)
     {
         if (string.IsNullOrWhiteSpace(json))
@@ -46,6 +63,12 @@ public static class ExtractAudioPresetJsonExtensions
         }
     }
 
+    /// <summary>
+    /// Attempts to deserialize a JSON string into an <see cref="ExtractAudioPreset"/> instance.
+    /// </summary>
+    /// <param name="json">The JSON string to deserialize.</param>
+    /// <param name="value">The deserialized <see cref="ExtractAudioPreset"/> instance, or null if deserialization failed.</param>
+    /// <returns>True if deserialization succeeded; otherwise, false.</returns>
     public static bool TryFromJson(string json, out ExtractAudioPreset? value)
     {
         value = null;
