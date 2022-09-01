@@ -8,6 +8,10 @@ namespace FFmpegFluent;
 /// </summary>
 public static class InputFileJsonExtensions
 {
+	/// <summary>
+	/// Gets the default JSON serializer options used for serializing and deserializing <see cref="InputFile"/> instances.
+	/// Uses camelCase property naming policy, ignores null values, and includes a string enum converter.
+	/// </summary>
 	private static readonly JsonSerializerOptions _jsonOptions = new(JsonSerializerDefaults.Web)
 	{
 		PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
