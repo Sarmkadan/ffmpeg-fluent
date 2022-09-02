@@ -1,4 +1,5 @@
 #nullable enable
+
 using System;
 using System.Collections.Generic;
 using System.IO;
@@ -18,13 +19,11 @@ namespace FFmpegFluent
         /// <param name="preset">The preset instance.</param>
         /// <param name="paths">Paths to the input files.</param>
         /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> or <paramref name="paths"/> is <see langword="null"/>.</exception>
         public static ConcatPreset AddInputs(this ConcatPreset preset, params string[] paths)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
-            if (paths == null)
-                throw new ArgumentNullException(nameof(paths));
+            ArgumentNullException.ThrowIfNull(preset);
+            ArgumentNullException.ThrowIfNull(paths);
 
             foreach (var path in paths)
             {
@@ -42,27 +41,32 @@ namespace FFmpegFluent
         /// <param name="searchPattern">Search pattern (e.g., "*.mp4", "*.mkv").</param>
         /// <param name="searchOption">Whether to include subdirectories.</param>
         /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="directoryPath"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+        /// <exception cref="DirectoryNotFoundException">The specified directory does not exist.</exception>
+        /// <exception cref="InvalidOperationException">No files matching the pattern were found in the directory.</exception>
         public static ConcatPreset AddInputsFromDirectory(
             this ConcatPreset preset,
             string directoryPath,
             string searchPattern = "*.mp4",
             SearchOption searchOption = SearchOption.TopDirectoryOnly)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
-            if (string.IsNullOrWhiteSpace(directoryPath))
-                throw new ArgumentException("Directory path cannot be null or whitespace.", nameof(directoryPath));
+            ArgumentNullException.ThrowIfNull(preset);
+            ArgumentException.ThrowIfNullOrWhiteSpace(directoryPath);
 
             if (!Directory.Exists(directoryPath))
+            {
                 throw new DirectoryNotFoundException($"Directory not found: {directoryPath}");
+            }
 
             var files = Directory.GetFiles(directoryPath, searchPattern, searchOption)
                 .OrderBy(f => f, StringComparer.OrdinalIgnoreCase)
                 .ToArray();
 
             if (files.Length == 0)
+            {
                 throw new InvalidOperationException($"No files found matching pattern '{searchPattern}' in directory '{directoryPath}'");
+            }
 
             foreach (var file in files)
             {
@@ -78,15 +82,14 @@ namespace FFmpegFluent
         /// <param name="preset">The preset instance.</param>
         /// <param name="presetName">NVENC preset (e.g., "fast", "medium", "slow").</param>
         /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="presetName"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
         public static ConcatPreset WithNvencReencode(
             this ConcatPreset preset,
             string presetName = "medium")
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
-            if (string.IsNullOrWhiteSpace(presetName))
-                throw new ArgumentException("Preset name cannot be null or whitespace.", nameof(presetName));
+            ArgumentNullException.ThrowIfNull(preset);
+            ArgumentException.ThrowIfNullOrWhiteSpace(presetName);
 
             return preset.WithReencode("h264_nvenc", "aac")
                 .WithVideoQualityPreset(presetName);
@@ -98,15 +101,14 @@ namespace FFmpegFluent
         /// <param name="preset">The preset instance.</param>
         /// <param name="presetName">QSV preset (e.g., "fast", "medium", "slow").</param>
         /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="presetName"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
         public static ConcatPreset WithQsvReencode(
             this ConcatPreset preset,
             string presetName = "medium")
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
-
-            if (string.IsNullOrWhiteSpace(presetName))
-                throw new ArgumentException("Preset name cannot be null or whitespace.", nameof(presetName));
+            ArgumentNullException.ThrowIfNull(preset);
+            ArgumentException.ThrowIfNullOrWhiteSpace(presetName);
 
             return preset.WithReencode("h264_qsv", "aac")
                 .WithVideoQualityPreset(presetName);
@@ -118,24 +120,41 @@ namespace FFmpegFluent
         /// <param name="preset">The preset instance.</param>
         /// <param name="presetName">Quality preset (e.g., "ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow").</param>
         /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
-        public static ConcatPreset WithVideoQualityPreset(this ConcatPreset preset, string presetName)
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="presetName"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+        private static void WithVideoQualityPresetInternal(this ConcatPreset preset, string presetName)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
+            ArgumentNullException.ThrowIfNull(preset);
+            ArgumentException.ThrowIfNullOrWhiteSpace(presetName);
 
-            if (string.IsNullOrWhiteSpace(presetName))
-                throw new ArgumentException("Preset name cannot be null or whitespace.", nameof(presetName));
-
+            // Store the preset name in the video codec field for later use by RunAsync
             // The actual preset application happens in RunAsync via FFmpeg's -preset flag
-            // We store it in a way that RunAsync can access it
-            var field = typeof(ConcatPreset).GetField("_videoCodec", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (field != null)
+            var field = typeof(ConcatPreset).GetField(
+                "_videoCodec",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            if (field is not null)
             {
                 // Append preset to the codec specification
                 var currentCodec = field.GetValue(preset) as string ?? "libx264";
                 field.SetValue(preset, $"{currentCodec}:{presetName}");
             }
+        }
 
+        /// <summary>
+        /// Sets the video quality preset for re-encoding operations.
+        /// </summary>
+        /// <param name="preset">The preset instance.</param>
+        /// <param name="presetName">Quality preset (e.g., "ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow").</param>
+        /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentException"><paramref name="presetName"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+        public static ConcatPreset WithVideoQualityPreset(this ConcatPreset preset, string presetName)
+        {
+            ArgumentNullException.ThrowIfNull(preset);
+            ArgumentException.ThrowIfNullOrWhiteSpace(presetName);
+
+            preset.WithVideoQualityPresetInternal(presetName);
             return preset;
         }
 
@@ -145,16 +164,21 @@ namespace FFmpegFluent
         /// <param name="preset">The preset instance.</param>
         /// <param name="delaySeconds">Delay duration in seconds.</param>
         /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentOutOfRangeException"><paramref name="delaySeconds"/> is negative.</exception>
         public static ConcatPreset WithLeadInDelay(this ConcatPreset preset, int delaySeconds)
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
+            ArgumentNullException.ThrowIfNull(preset);
 
             if (delaySeconds < 0)
+            {
                 throw new ArgumentOutOfRangeException(nameof(delaySeconds), "Delay must be non-negative.");
+            }
 
             if (delaySeconds == 0)
+            {
                 return preset;
+            }
 
             // Create a silent audio file with the specified delay
             var silenceFile = Path.GetTempFileName();
@@ -190,18 +214,27 @@ namespace FFmpegFluent
         /// <param name="preset">The preset instance.</param>
         /// <param name="ffmpegPath">Path to the ffmpeg executable.</param>
         /// <returns>The path to the concatenated output file.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        /// <exception cref="InvalidOperationException">Could not access output path field or output path is not set.</exception>
         public static async Task<string> RunAndGetOutputPathAsync(this ConcatPreset preset, string ffmpegPath = "ffmpeg")
         {
-            if (preset == null)
-                throw new ArgumentNullException(nameof(preset));
+            ArgumentNullException.ThrowIfNull(preset);
+            ArgumentException.ThrowIfNullOrWhiteSpace(ffmpegPath);
 
-            var outputPathField = typeof(ConcatPreset).GetField("_outputPath", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
-            if (outputPathField == null)
+            var outputPathField = typeof(ConcatPreset).GetField(
+                "_outputPath",
+                System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+            if (outputPathField is null)
+            {
                 throw new InvalidOperationException("Could not access output path field.");
+            }
 
             var outputPath = outputPathField.GetValue(preset) as string;
             if (string.IsNullOrWhiteSpace(outputPath))
+            {
                 throw new InvalidOperationException("Output path is not set.");
+            }
 
             await preset.RunAsync(ffmpegPath).ConfigureAwait(false);
             return outputPath;
