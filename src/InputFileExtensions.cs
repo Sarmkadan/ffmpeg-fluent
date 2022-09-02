@@ -11,7 +11,8 @@ public static class InputFileExtensions
     /// <param name="inputFile">The input file instance.</param>
     /// <param name="timeString">The start time as a string in format HH:mm:ss.fff.</param>
     /// <returns>The input file instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when timeString is null or empty.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="timeString"/> is null or empty.</exception>
+    /// <exception cref="FormatException">Thrown when <paramref name="timeString"/> has an invalid format.</exception>
     public static InputFile Seek(this InputFile inputFile, string timeString)
     {
         ArgumentException.ThrowIfNullOrEmpty(timeString);
@@ -22,12 +23,19 @@ public static class InputFileExtensions
             throw new ArgumentException("Time string must be in format HH:mm:ss.fff", nameof(timeString));
         }
 
-        int hours = int.Parse(timeParts[0]);
-        int minutes = int.Parse(timeParts[1]);
+        if (!int.TryParse(timeParts[0], out int hours) ||
+            !int.TryParse(timeParts[1], out int minutes))
+        {
+            throw new FormatException("Hours and minutes must be valid integers");
+        }
 
         string[] secondsParts = timeParts[2].Split('.', StringSplitOptions.RemoveEmptyEntries);
-        int seconds = int.Parse(secondsParts[0]);
-        int milliseconds = secondsParts.Length > 1 ? int.Parse(secondsParts[1]) : 0;
+        if (!int.TryParse(secondsParts[0], out int seconds))
+        {
+            throw new FormatException("Seconds must be a valid integer");
+        }
+
+        int milliseconds = secondsParts.Length > 1 && int.TryParse(secondsParts[1], out var ms) ? ms : 0;
 
         var startTime = new TimeSpan(hours, minutes, seconds).Add(TimeSpan.FromMilliseconds(milliseconds));
         return inputFile.Seek(startTime);
@@ -39,7 +47,8 @@ public static class InputFileExtensions
     /// <param name="inputFile">The input file instance.</param>
     /// <param name="timeString">The duration as a string in format HH:mm:ss.fff.</param>
     /// <returns>The input file instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentException">Thrown when timeString is null or empty.</exception>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="timeString"/> is null or empty.</exception>
+    /// <exception cref="FormatException">Thrown when <paramref name="timeString"/> has an invalid format.</exception>
     public static InputFile Duration(this InputFile inputFile, string timeString)
     {
         ArgumentException.ThrowIfNullOrEmpty(timeString);
@@ -50,12 +59,19 @@ public static class InputFileExtensions
             throw new ArgumentException("Time string must be in format HH:mm:ss.fff", nameof(timeString));
         }
 
-        int hours = int.Parse(timeParts[0]);
-        int minutes = int.Parse(timeParts[1]);
+        if (!int.TryParse(timeParts[0], out int hours) ||
+            !int.TryParse(timeParts[1], out int minutes))
+        {
+            throw new FormatException("Hours and minutes must be valid integers");
+        }
 
         string[] secondsParts = timeParts[2].Split('.', StringSplitOptions.RemoveEmptyEntries);
-        int seconds = int.Parse(secondsParts[0]);
-        int milliseconds = secondsParts.Length > 1 ? int.Parse(secondsParts[1]) : 0;
+        if (!int.TryParse(secondsParts[0], out int seconds))
+        {
+            throw new FormatException("Seconds must be a valid integer");
+        }
+
+        int milliseconds = secondsParts.Length > 1 && int.TryParse(secondsParts[1], out var ms) ? ms : 0;
 
         var duration = new TimeSpan(hours, minutes, seconds).Add(TimeSpan.FromMilliseconds(milliseconds));
         return inputFile.Duration(duration);
@@ -67,7 +83,7 @@ public static class InputFileExtensions
     /// <param name="inputFile">The input file instance.</param>
     /// <param name="options">Collection of key-value pairs representing options.</param>
     /// <returns>The input file instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
     public static InputFile Options(this InputFile inputFile, IEnumerable<KeyValuePair<string, string?>> options)
     {
         ArgumentNullException.ThrowIfNull(options);
@@ -86,7 +102,7 @@ public static class InputFileExtensions
     /// <param name="inputFile">The input file instance.</param>
     /// <param name="options">Collection of option tuples (key, value).</param>
     /// <returns>The input file instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentNullException">Thrown when options is null.</exception>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
     public static InputFile Options(this InputFile inputFile, params (string Key, string? Value)[] options)
     {
         ArgumentNullException.ThrowIfNull(options);
