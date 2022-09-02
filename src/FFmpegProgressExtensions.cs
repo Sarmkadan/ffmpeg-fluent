@@ -9,10 +9,13 @@ public static class FFmpegProgressExtensions
     /// Calculates the estimated remaining time based on processed time and speed multiplier.
     /// </summary>
     /// <param name="progress">The FFmpeg progress instance.</param>
-    /// <returns>The estimated remaining time, or null if speed is not available.</returns>
+    /// <returns>The estimated remaining time, or null if speed is not available or is zero/negative.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="progress"/> is null.</exception>
     public static TimeSpan? GetRemainingTime(this FFmpegProgress progress)
     {
-        if (progress?.SpeedX == null || progress.SpeedX <= 0)
+        ArgumentNullException.ThrowIfNull(progress);
+
+        if (progress.SpeedX == null || progress.SpeedX <= 0)
         {
             return null;
         }
@@ -30,9 +33,11 @@ public static class FFmpegProgressExtensions
     /// </summary>
     /// <param name="progress">The FFmpeg progress instance.</param>
     /// <returns>True if processing appears to be complete; otherwise, false.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="progress"/> is null.</exception>
     public static bool IsComplete(this FFmpegProgress progress)
     {
-        return progress?.SpeedX == 0;
+        ArgumentNullException.ThrowIfNull(progress);
+        return progress.SpeedX == 0;
     }
 
     /// <summary>
@@ -41,14 +46,12 @@ public static class FFmpegProgressExtensions
     /// <param name="progress">The FFmpeg progress instance.</param>
     /// <param name="includeBitrate">Whether to include bitrate in the output.</param>
     /// <returns>A formatted progress string.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="progress"/> is null.</exception>
     public static string ToProgressString(this FFmpegProgress progress, bool includeBitrate = true)
     {
-        if (progress == null)
-        {
-            return "No progress available";
-        }
+        ArgumentNullException.ThrowIfNull(progress);
 
-        var timeStr = progress.ProcessedTime.ToString("hh\\:mm\\:ss");
+        var timeStr = progress.ProcessedTime.ToString("hh\\:mm\\:ss", System.Globalization.CultureInfo.InvariantCulture);
         var speedStr = progress.SpeedX.HasValue ? $"{progress.SpeedX.Value:F2}x" : "?x";
         var fpsStr = progress.Fps.HasValue ? $"{progress.Fps.Value:F1}fps" : "?fps";
 
@@ -67,9 +70,12 @@ public static class FFmpegProgressExtensions
     /// </summary>
     /// <param name="progress">The FFmpeg progress instance.</param>
     /// <returns>The estimated total duration, or null if speed is not available.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="progress"/> is null.</exception>
     public static TimeSpan? GetEstimatedTotalDuration(this FFmpegProgress progress)
     {
-        if (progress?.SpeedX == null || progress.SpeedX <= 0)
+        ArgumentNullException.ThrowIfNull(progress);
+
+        if (progress.SpeedX == null || progress.SpeedX <= 0)
         {
             return null;
         }
