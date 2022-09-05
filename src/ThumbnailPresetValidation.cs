@@ -1,33 +1,34 @@
 using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 
 namespace FFmpegFluent
 {
+    /// <summary>
+    /// Provides validation methods for <see cref="ThumbnailPreset"/> instances.
+    /// </summary>
     public static class ThumbnailPresetValidation
     {
+        /// <summary>
+        /// Validates the specified <see cref="ThumbnailPreset"/> instance.
+        /// </summary>
+        /// <param name="value">The thumbnail preset to validate.</param>
+        /// <returns>A read-only list of validation error messages. Empty if valid.</returns>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
         public static IReadOnlyList<string> Validate(this ThumbnailPreset value)
         {
+            ArgumentNullException.ThrowIfNull(value);
+
             var errors = new List<string>();
 
-            if (value == null)
-            {
-                errors.Add("ThumbnailPreset cannot be null");
-                return errors.AsReadOnly();
-            }
-
-            // Check AtTime - it's a method that returns ThumbnailPreset, so we need to check the _position field
-            // Since we can't access private fields, we'll check if the position is set to a valid value
-            // by examining the behavior - AtTime returns a new instance, so we need to look at the actual position
-            // For validation purposes, we'll assume AtTime was called with a valid TimeSpan
-
+            // Validate that BuildArguments returns valid arguments
             var buildArgs = value.BuildArguments();
+
             if (buildArgs == null)
             {
-                errors.Add("BuildArguments cannot be null");
+                throw new InvalidOperationException("BuildArguments returned null, which should never happen.");
             }
-            else if (buildArgs.Length == 0)
+
+            if (buildArgs.Length == 0)
             {
                 errors.Add("BuildArguments must contain at least one argument");
             }
@@ -46,11 +47,19 @@ namespace FFmpegFluent
             return errors.AsReadOnly();
         }
 
-        public static bool IsValid(this ThumbnailPreset value)
-        {
-            return Validate(value).Count == 0;
-        }
+        /// <summary>
+        /// Determines whether the specified <see cref="ThumbnailPreset"/> is valid.
+        /// </summary>
+        /// <param name="value">The thumbnail preset to check.</param>
+        /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
+        public static bool IsValid(this ThumbnailPreset value) => Validate(value).Count == 0;
 
+        /// <summary>
+        /// Validates the specified <see cref="ThumbnailPreset"/> and throws an exception if invalid.
+        /// </summary>
+        /// <param name="value">The thumbnail preset to validate.</param>
+        /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+        /// <exception cref="ArgumentException">Thrown if the preset is invalid.</exception>
         public static void EnsureValid(this ThumbnailPreset value)
         {
             var errors = Validate(value);
