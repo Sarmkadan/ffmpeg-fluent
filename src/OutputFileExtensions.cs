@@ -15,43 +15,47 @@ public static class OutputFileExtensions
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile AsMp4(this OutputFile outputFile)
-    {
-        ArgumentNullException.ThrowIfNull(outputFile);
-        return outputFile.Format("mp4");
-    }
+        => outputFile.EnsureNotNull().Format("mp4");
 
     /// <summary>
     /// Sets the output format to MKV container.
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile AsMkv(this OutputFile outputFile)
-    {
-        ArgumentNullException.ThrowIfNull(outputFile);
-        return outputFile.Format("matroska");
-    }
+        => outputFile.EnsureNotNull().Format("matroska");
 
     /// <summary>
     /// Sets the output format to WebM container.
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile AsWebM(this OutputFile outputFile)
-    {
-        ArgumentNullException.ThrowIfNull(outputFile);
-        return outputFile.Format("webm");
-    }
+        => outputFile.EnsureNotNull().Format("webm");
 
     /// <summary>
     /// Sets the output format to MOV container.
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile AsMov(this OutputFile outputFile)
+        => outputFile.EnsureNotNull().Format("mov");
+
+    /// <summary>
+    /// Ensures the output file instance is not null.
+    /// </summary>
+    /// <param name="outputFile">The output file instance.</param>
+    /// <returns>The output file instance.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+    private static OutputFile EnsureNotNull(this OutputFile outputFile)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
-        return outputFile.Format("mov");
+        return outputFile;
     }
 
     /// <summary>
@@ -59,6 +63,7 @@ public static class OutputFileExtensions
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile WithH264Codec(this OutputFile outputFile)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -71,6 +76,7 @@ public static class OutputFileExtensions
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile WithH265Codec(this OutputFile outputFile)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -83,6 +89,7 @@ public static class OutputFileExtensions
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile WithVp9Codec(this OutputFile outputFile)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -95,6 +102,7 @@ public static class OutputFileExtensions
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile WithAacAudio(this OutputFile outputFile)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -107,6 +115,7 @@ public static class OutputFileExtensions
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile WithMp3Audio(this OutputFile outputFile)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -119,6 +128,7 @@ public static class OutputFileExtensions
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile WithOpusAudio(this OutputFile outputFile)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -132,6 +142,8 @@ public static class OutputFileExtensions
     /// <param name="outputFile">The output file instance.</param>
     /// <param name="bitrate">The bitrate value (e.g., "5000k" for 5000 kbps).</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException"><paramref name="bitrate"/> is <see langword="null"/> or empty</exception>
     public static OutputFile WithVideoBitrate(this OutputFile outputFile, string bitrate)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -146,6 +158,8 @@ public static class OutputFileExtensions
     /// <param name="outputFile">The output file instance.</param>
     /// <param name="bitrate">The bitrate value (e.g., "192k" for 192 kbps).</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException"><paramref name="bitrate"/> is <see langword="null"/> or empty</exception>
     public static OutputFile WithAudioBitrate(this OutputFile outputFile, string bitrate)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -160,6 +174,7 @@ public static class OutputFileExtensions
     /// <param name="outputFile">The output file instance.</param>
     /// <param name="fps">The frames per second value (e.g., 30.0, 60.0).</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile WithFrameRate(this OutputFile outputFile, double fps)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -174,6 +189,7 @@ public static class OutputFileExtensions
     /// <param name="width">The width in pixels.</param>
     /// <param name="height">The height in pixels.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile WithResolution(this OutputFile outputFile, int width, int height)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -187,6 +203,8 @@ public static class OutputFileExtensions
     /// <param name="outputFile">The output file instance.</param>
     /// <param name="title">The title text.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException"><paramref name="title"/> is <see langword="null"/> or empty</exception>
     public static OutputFile WithTitle(this OutputFile outputFile, string title)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -200,6 +218,8 @@ public static class OutputFileExtensions
     /// <param name="outputFile">The output file instance.</param>
     /// <param name="author">The author name.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException"><paramref name="author"/> is <see langword="null"/> or empty</exception>
     public static OutputFile WithAuthor(this OutputFile outputFile, string author)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -213,6 +233,8 @@ public static class OutputFileExtensions
     /// <param name="outputFile">The output file instance.</param>
     /// <param name="copyright">The copyright text.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+    /// <exception cref="ArgumentException"><paramref name="copyright"/> is <see langword="null"/> or empty</exception>
     public static OutputFile WithCopyright(this OutputFile outputFile, string copyright)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -225,6 +247,7 @@ public static class OutputFileExtensions
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile ForceOverwrite(this OutputFile outputFile)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
@@ -236,6 +259,7 @@ public static class OutputFileExtensions
     /// </summary>
     /// <param name="outputFile">The output file instance.</param>
     /// <returns>The output file instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
     public static OutputFile PreserveExisting(this OutputFile outputFile)
     {
         ArgumentNullException.ThrowIfNull(outputFile);
