@@ -10,12 +10,10 @@ public static class FFmpegProgressValidation
     /// </summary>
     /// <param name="value">The FFmpeg progress to validate.</param>
     /// <returns>A list of validation problems (empty if valid).</returns>
-    public static IReadOnlyList<string> Validate(this FFmpegProgress value)
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    public static IReadOnlyList<string> Validate(this FFmpegProgress? value)
     {
-        if (value is null)
-        {
-            return new[] { "FFmpegProgress cannot be null." };
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         var problems = new List<string>();
 
@@ -24,45 +22,37 @@ public static class FFmpegProgressValidation
         {
             problems.Add("ProcessedTime must be set (cannot be default TimeSpan).");
         }
+        else if (value.ProcessedTime == TimeSpan.MinValue)
+        {
+            problems.Add("ProcessedTime cannot be TimeSpan.MinValue.");
+        }
         else if (value.ProcessedTime < TimeSpan.Zero)
         {
             problems.Add("ProcessedTime cannot be negative.");
         }
 
         // Validate Fps (must be positive if set)
-        if (value.Fps.HasValue)
+        if (value.Fps is { } fps && fps <= 0)
         {
-            if (value.Fps <= 0)
-            {
-                problems.Add("Fps must be positive if set.");
-            }
+            problems.Add("Fps must be positive if set.");
         }
 
         // Validate Bitrate (must be non-empty if set)
-        if (!string.IsNullOrWhiteSpace(value.Bitrate))
+        if (value.Bitrate is { } bitrate && string.IsNullOrWhiteSpace(bitrate))
         {
-            if (string.IsNullOrWhiteSpace(value.Bitrate))
-            {
-                problems.Add("Bitrate must be non-empty if set.");
-            }
+            problems.Add("Bitrate must be non-empty if set.");
         }
 
         // Validate FrameCount (must be non-negative if set)
-        if (value.FrameCount.HasValue)
+        if (value.FrameCount is { } frameCount && frameCount < 0)
         {
-            if (value.FrameCount < 0)
-            {
-                problems.Add("FrameCount must be non-negative if set.");
-            }
+            problems.Add("FrameCount must be non-negative if set.");
         }
 
         // Validate SpeedX (must be positive if set)
-        if (value.SpeedX.HasValue)
+        if (value.SpeedX is { } speed && speed <= 0)
         {
-            if (value.SpeedX <= 0)
-            {
-                problems.Add("SpeedX must be positive if set.");
-            }
+            problems.Add("SpeedX must be positive if set.");
         }
 
         return problems.AsReadOnly();
@@ -73,17 +63,17 @@ public static class FFmpegProgressValidation
     /// </summary>
     /// <param name="value">The FFmpeg progress to check.</param>
     /// <returns>True if the value is valid; otherwise, false.</returns>
-    public static bool IsValid(this FFmpegProgress value)
-    {
-        return value.Validate().Count == 0;
-    }
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+    public static bool IsValid(this FFmpegProgress? value)
+        => value?.Validate().Count == 0;
 
     /// <summary>
     /// Ensures that the specified FFmpeg progress value is valid, throwing an exception if not.
     /// </summary>
     /// <param name="value">The FFmpeg progress to validate.</param>
+    /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     /// <exception cref="ArgumentException">Thrown when the value is invalid.</exception>
-    public static void EnsureValid(this FFmpegProgress value)
+    public static void EnsureValid(this FFmpegProgress? value)
     {
         var problems = value.Validate();
 
