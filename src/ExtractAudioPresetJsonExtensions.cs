@@ -24,10 +24,7 @@ public static class ExtractAudioPresetJsonExtensions
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
     public static string ToJson(this ExtractAudioPreset value, bool indented = false)
     {
-        if (value == null)
-        {
-            throw new ArgumentNullException(nameof(value));
-        }
+        ArgumentNullException.ThrowIfNull(value);
 
         var options = indented
             ? new JsonSerializerOptions(_jsonOptions)
@@ -48,10 +45,7 @@ public static class ExtractAudioPresetJsonExtensions
     /// <exception cref="JsonException">Thrown when deserialization fails, wrapped with a message.</exception>
     public static ExtractAudioPreset? FromJson(string json)
     {
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            throw new ArgumentException("JSON string cannot be null or whitespace.", nameof(json));
-        }
+        ArgumentException.ThrowIfNullOrWhiteSpace(json, nameof(json));
 
         try
         {
@@ -67,7 +61,7 @@ public static class ExtractAudioPresetJsonExtensions
     /// Attempts to deserialize a JSON string into an <see cref="ExtractAudioPreset"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">The deserialized <see cref="ExtractAudioPreset"/> instance, or null if deserialization failed.</param>
+    /// <param name="value">When this method returns, contains the deserialized <see cref="ExtractAudioPreset"/> instance if deserialization succeeded, or null if deserialization failed.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
     public static bool TryFromJson(string json, out ExtractAudioPreset? value)
     {
@@ -81,7 +75,7 @@ public static class ExtractAudioPresetJsonExtensions
         try
         {
             value = JsonSerializer.Deserialize<ExtractAudioPreset>(json, _jsonOptions);
-            return true;
+            return value is not null;
         }
         catch (JsonException)
         {
