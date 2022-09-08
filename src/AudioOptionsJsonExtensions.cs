@@ -5,7 +5,8 @@ using System.Text.Json.Serialization;
 namespace FFmpegFluent
 {
 	/// <summary>
-	/// Provides JSON serialization extensions for <see cref="AudioOptions"/>.
+	/// Provides JSON serialization and deserialization extensions for <see cref="AudioOptions"/>.
+	/// Supports formatting control and error handling for JSON operations.
 	/// </summary>
 	public static class AudioOptionsJsonExtensions
 	{
@@ -32,7 +33,11 @@ namespace FFmpegFluent
 		/// Deserializes a JSON string to an <see cref="AudioOptions"/> instance.
 		/// </summary>
 		/// <param name="json">The JSON string to deserialize.</param>
-		/// <returns>The deserialized <see cref="AudioOptions"/> instance, or <see langword="null"/> if deserialization fails.</returns>
+		/// <returns>
+		/// The deserialized <see cref="AudioOptions"/> instance, or <see langword="null"/>
+		/// if deserialization fails due to invalid JSON format.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
 		public static AudioOptions? FromJson(string json)
 		{
 			ArgumentNullException.ThrowIfNull(json);
@@ -52,7 +57,10 @@ namespace FFmpegFluent
 		/// </summary>
 		/// <param name="json">The JSON string to deserialize.</param>
 		/// <param name="value">Receives the deserialized <see cref="AudioOptions"/> instance if successful.</param>
-		/// <returns><see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.</returns>
+		/// <returns>
+		/// <see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.
+		/// </returns>
+		/// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
 		public static bool TryFromJson(string json, out AudioOptions? value)
 		{
 			ArgumentNullException.ThrowIfNull(json);
