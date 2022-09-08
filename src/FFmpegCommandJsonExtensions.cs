@@ -39,7 +39,9 @@ namespace FFmpegFluent
         /// Deserializes a JSON string to an <see cref="FFmpegCommand"/> instance.
         /// </summary>
         /// <param name="json">The JSON string to deserialize.</param>
-        /// <returns>The deserialized FFmpegCommand, or null if deserialization fails.</returns>
+        /// <returns>
+        /// The deserialized <see cref="FFmpegCommand"/>, or null if deserialization fails.
+        /// </returns>
         /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
         public static FFmpegCommand? FromJson(string json)
         {
@@ -59,7 +61,7 @@ namespace FFmpegFluent
         /// Attempts to deserialize a JSON string to an <see cref="FFmpegCommand"/> instance.
         /// </summary>
         /// <param name="json">The JSON string to deserialize.</param>
-        /// <param name="value">Receives the deserialized FFmpegCommand if successful.</param>
+        /// <param name="value">Receives the deserialized <see cref="FFmpegCommand"/> if successful.</param>
         /// <returns>True if deserialization succeeds; otherwise, false.</returns>
         /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
         public static bool TryFromJson(string json, out FFmpegCommand? value)
