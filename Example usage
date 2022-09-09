@@ -1,0 +1,10 @@
+var output = new OutputFile("output.mp4")
+    .AsMp4()
+    .WithH264Codec()
+    .WithAacAudio()
+    .WithVideoBitrate("5M")
+    .WithAudioBitrate("192k")
+    .WithFrameRate(30)
+    .WithResolution(1280, 720)
+    .WithTitle("My Video")
+    .ForceOverwrite();

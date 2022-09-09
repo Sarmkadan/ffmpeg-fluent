@@ -1,7 +1,5 @@
 # ffmpeg-fluent
 
-// ... rest of the file content ...
-
 ## HardwareAccelOptions
 The `HardwareAccelOptions` type allows you to configure hardware acceleration options for FFmpeg. It provides a way to specify the hardware acceleration kind, device, and input arguments.
 
@@ -18,3 +16,7 @@ Example usage:
 ## ConcatPresetExtensions
 The `ConcatPresetExtensions` type offers fluent extension methods to build a `ConcatPreset` for concatenating multiple inputs, optionally applying hardware‑accelerated re‑encoding, quality presets, and lead‑in delays. It also provides an asynchronous helper to run the preset and retrieve the generated output file path.
 
+## OutputFileExtensions
+The `OutputFileExtensions` type provides fluent extension methods to configure output file properties like container format, video/audio codecs, bitrates, frame rate, resolution, metadata, and overwrite behavior. These methods enable building an `OutputFile` configuration using a fluent API.
+
+Example usage:
