@@ -9,7 +9,7 @@ namespace FFmpegFluent
     public static class ThumbnailPresetValidation
     {
         /// <summary>
-        /// Validates the specified <see cref="ThumbnailPreset"/> instance.
+        /// Validates the <see cref="ThumbnailPreset"/> by checking if <see cref="ThumbnailPreset.BuildArguments"/> returns valid command-line arguments.
         /// </summary>
         /// <param name="value">The thumbnail preset to validate.</param>
         /// <returns>A read-only list of validation error messages. Empty if valid.</returns>
@@ -48,14 +48,14 @@ namespace FFmpegFluent
         }
 
         /// <summary>
-        /// Determines whether the specified <see cref="ThumbnailPreset"/> is valid.
+        /// Determines whether the specified <see cref="ThumbnailPreset"/> is valid by verifying that its <see cref="ThumbnailPreset.BuildArguments"/> contain no errors.
         /// </summary>
         /// <param name="value">The thumbnail preset to check.</param>
-        /// <returns><see langword="true"/> if valid; otherwise, <see langword="false"/>.</returns>
+        /// <returns><see langword="true"/> if the preset is valid; otherwise, <see langword="false"/>.</returns>
         public static bool IsValid(this ThumbnailPreset value) => Validate(value).Count == 0;
 
         /// <summary>
-        /// Validates the specified <see cref="ThumbnailPreset"/> and throws an exception if invalid.
+        /// Validates the specified <see cref="ThumbnailPreset"/> and throws an <see cref="ArgumentException"/> if the preset's arguments are invalid.
         /// </summary>
         /// <param name="value">The thumbnail preset to validate.</param>
         /// <exception cref="ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
