@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace FFmpegFluent;
 
 /// <summary>
@@ -23,19 +25,19 @@ public static class InputFileExtensions
             throw new ArgumentException("Time string must be in format HH:mm:ss.fff", nameof(timeString));
         }
 
-        if (!int.TryParse(timeParts[0], out int hours) ||
-            !int.TryParse(timeParts[1], out int minutes))
+        if (!int.TryParse(timeParts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int hours) ||
+            !int.TryParse(timeParts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int minutes))
         {
             throw new FormatException("Hours and minutes must be valid integers");
         }
 
         string[] secondsParts = timeParts[2].Split('.', StringSplitOptions.RemoveEmptyEntries);
-        if (!int.TryParse(secondsParts[0], out int seconds))
+        if (!int.TryParse(secondsParts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds))
         {
             throw new FormatException("Seconds must be a valid integer");
         }
 
-        int milliseconds = secondsParts.Length > 1 && int.TryParse(secondsParts[1], out var ms) ? ms : 0;
+        int milliseconds = secondsParts.Length > 1 && int.TryParse(secondsParts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var ms) ? ms : 0;
 
         var startTime = new TimeSpan(hours, minutes, seconds).Add(TimeSpan.FromMilliseconds(milliseconds));
         return inputFile.Seek(startTime);
@@ -59,19 +61,19 @@ public static class InputFileExtensions
             throw new ArgumentException("Time string must be in format HH:mm:ss.fff", nameof(timeString));
         }
 
-        if (!int.TryParse(timeParts[0], out int hours) ||
-            !int.TryParse(timeParts[1], out int minutes))
+        if (!int.TryParse(timeParts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int hours) ||
+            !int.TryParse(timeParts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out int minutes))
         {
             throw new FormatException("Hours and minutes must be valid integers");
         }
 
         string[] secondsParts = timeParts[2].Split('.', StringSplitOptions.RemoveEmptyEntries);
-        if (!int.TryParse(secondsParts[0], out int seconds))
+        if (!int.TryParse(secondsParts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out int seconds))
         {
             throw new FormatException("Seconds must be a valid integer");
         }
 
-        int milliseconds = secondsParts.Length > 1 && int.TryParse(secondsParts[1], out var ms) ? ms : 0;
+        int milliseconds = secondsParts.Length > 1 && int.TryParse(secondsParts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var ms) ? ms : 0;
 
         var duration = new TimeSpan(hours, minutes, seconds).Add(TimeSpan.FromMilliseconds(milliseconds));
         return inputFile.Duration(duration);

@@ -1,5 +1,6 @@
 using System;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Text.Json;
 using System.Threading;
@@ -10,7 +11,7 @@ namespace FFmpegFluent
     /// <summary>
     /// Represents information about a media file.
     /// </summary>
-    public class MediaInfo
+    public sealed class MediaInfo
     {
         /// <summary>
         /// Gets the duration of the media file.
@@ -124,9 +125,9 @@ namespace FFmpegFluent
                 var root = json.RootElement;
 
                 var format = root.GetProperty("format");
-                var bitRate = long.Parse(format.GetProperty("bit_rate").GetString() ?? "0");
+                var bitRate = long.Parse(format.GetProperty("bit_rate").GetString() ?? "0", CultureInfo.InvariantCulture);
 
-                var duration = TimeSpan.FromSeconds(double.Parse(format.GetProperty("duration").GetString() ?? "0"));
+                var duration = TimeSpan.FromSeconds(double.Parse(format.GetProperty("duration").GetString() ?? "0", CultureInfo.InvariantCulture));
 
                 string? videoCodec = null;
                 string? audioCodec = null;
@@ -149,7 +150,7 @@ namespace FFmpegFluent
                         if (rFrameRate != null)
                         {
                             var parts = rFrameRate.Split('/');
-                            if (parts.Length == 2 && int.TryParse(parts[0], out var numerator) && int.TryParse(parts[1], out var denominator) && denominator != 0)
+                            if (parts.Length == 2 && int.TryParse(parts[0], NumberStyles.Integer, CultureInfo.InvariantCulture, out var numerator) && int.TryParse(parts[1], NumberStyles.Integer, CultureInfo.InvariantCulture, out var denominator) && denominator != 0)
                             {
                                 frameRate = (double)numerator / denominator;
                             }

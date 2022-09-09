@@ -1,5 +1,6 @@
 #nullable enable
 using System.Collections.Generic;
+using System.Globalization;
 
 namespace FFmpegFluent
 {
@@ -107,7 +108,7 @@ namespace FFmpegFluent
             if (_volume.HasValue)
             {
                 yield return "-af";
-                yield return $"volume={_volume.Value}";
+                yield return $"volume={_volume.Value.ToString(CultureInfo.InvariantCulture)}";
             }
         }
     }
