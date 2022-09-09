@@ -10,3 +10,7 @@ The `FFmpegProgress` type represents the progress information reported by FFmpeg
 
 Example usage:
 
+## ExtractAudioPresetExtensions
+The `ExtractAudioPresetExtensions` type provides a set of convenience methods to create common audio extraction presets. These presets can be used to extract audio from a video file and save it in a specific format.
+
+Example usage:
