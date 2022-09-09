@@ -1,3 +1,5 @@
+using System.Globalization;
+
 namespace FFmpegFluent;
 
 /// <summary>
@@ -46,7 +48,7 @@ public sealed class FFmpegProgress
         }
 
         var frameMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"frame=\s*(\d+)");
-        var timeMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"time=(\d{2}:\d{2}:\d{2}\.\d{2,}");
+        var timeMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"time=(\d{2}:\d{2}:\d{2}\.\d{2,})");
         var fpsMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"fps=\s*(\d+\.?\d*)");
         var bitrateMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"bitrate=\s*([\d.]+\s*[kKmMgG]?bps)");
         var speedMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"speed=\s*(\d+\.?\d*)x");
@@ -59,10 +61,10 @@ public sealed class FFmpegProgress
         var progressResult = new FFmpegProgress
         {
             ProcessedTime = ParseTime(timeMatch.Groups[1].Value),
-            FrameCount = frameMatch.Success ? long.Parse(frameMatch.Groups[1].Value) : null,
-            Fps = fpsMatch.Success ? double.Parse(fpsMatch.Groups[1].Value) : null,
+            FrameCount = frameMatch.Success ? long.Parse(frameMatch.Groups[1].Value, CultureInfo.InvariantCulture) : null,
+            Fps = fpsMatch.Success ? double.Parse(fpsMatch.Groups[1].Value, CultureInfo.InvariantCulture) : null,
             Bitrate = bitrateMatch.Success ? bitrateMatch.Groups[1].Value.Trim() : null,
-            SpeedX = speedMatch.Success ? double.Parse(speedMatch.Groups[1].Value) : null
+            SpeedX = speedMatch.Success ? double.Parse(speedMatch.Groups[1].Value, CultureInfo.InvariantCulture) : null
         };
 
         progress = progressResult;
@@ -78,11 +80,11 @@ public sealed class FFmpegProgress
             throw new FormatException("Invalid time format");
         }
 
-        var hours = int.Parse(parts[0]);
-        var minutes = int.Parse(parts[1]);
+        var hours = int.Parse(parts[0], CultureInfo.InvariantCulture);
+        var minutes = int.Parse(parts[1], CultureInfo.InvariantCulture);
         var secondsParts = parts[2].Split('.', StringSplitOptions.RemoveEmptyEntries);
-        var seconds = int.Parse(secondsParts[0]);
-        var milliseconds = secondsParts.Length > 1 ? int.Parse(secondsParts[1]) : 0;
+        var seconds = int.Parse(secondsParts[0], CultureInfo.InvariantCulture);
+        var milliseconds = secondsParts.Length > 1 ? int.Parse(secondsParts[1], CultureInfo.InvariantCulture) : 0;
 
         return new TimeSpan(0, hours, minutes, seconds, milliseconds);
     }
