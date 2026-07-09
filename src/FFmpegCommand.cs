@@ -120,7 +120,7 @@ public sealed class FFmpegCommand
     /// <returns>The exit code of the command.</returns>
     public async Task<int> RunAsync(IProgress<FFmpegProgress>? progress = null, CancellationToken ct = default)
     {
-        var process = new Process
+        using var process = new Process
         {
             StartInfo =
             {
@@ -135,11 +135,16 @@ public sealed class FFmpegCommand
         process.Start();
 
         var stderrLines = new Queue<string>();
-        _ = Task.Run(async () =>
+        var stderrReadTask = Task.Run(async () =>
         {
             while (!process.StandardError.EndOfStream)
             {
                 var line = await process.StandardError.ReadLineAsync(ct);
+                if (line is null)
+                {
+                    continue;
+                }
+
                 stderrLines.Enqueue(line);
                 if (progress != null && FFmpegProgress.TryParse(line, out var ffmpegProgress))
                 {
@@ -149,6 +154,7 @@ public sealed class FFmpegCommand
         }, ct);
 
         await process.WaitForExitAsync(ct);
+        await stderrReadTask.ConfigureAwait(false);
 
         if (process.ExitCode != 0)
         {

@@ -1,4 +1,5 @@
 using System;
+using System.Globalization;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -124,8 +125,12 @@ public string BuildFilterComplex()
                 throw new InvalidOperationException("Unknown watermark position");
         }
 
-        // Build the filter complex string
-        return $"[0:v][1:v]overlay={positionX}:{positionY}:format=auto,format=yuv420p";
+        // Scale the watermark and apply opacity via an alpha channel mix before overlaying it.
+        var scale = _scale.ToString(CultureInfo.InvariantCulture);
+        var opacity = _opacity.ToString(CultureInfo.InvariantCulture);
+
+        return $"[1:v]scale=iw*{scale}:-1,format=rgba,colorchannelmixer=aa={opacity}[wm];" +
+               $"[0:v][wm]overlay={positionX}:{positionY}:format=auto,format=yuv420p[outv]";
     }
 
     /// <summary>
@@ -159,7 +164,7 @@ public string[] BuildArguments()
 public async Task RunAsync(string ffmpegPath = "ffmpeg", CancellationToken ct = default)
     {
         var arguments = BuildArguments();
-        var process = new System.Diagnostics.Process
+        using var process = new System.Diagnostics.Process
         {
             StartInfo = new System.Diagnostics.ProcessStartInfo
             {
