@@ -106,20 +106,20 @@ public string BuildFilterComplex()
                 positionY = _margin.ToString();
                 break;
             case WatermarkPosition.TopRight:
-                positionX = $"w - main_w - {_margin}";
+                positionX = $"main_w-overlay_w-{_margin}";
                 positionY = _margin.ToString();
                 break;
             case WatermarkPosition.BottomLeft:
                 positionX = _margin.ToString();
-                positionY = $"h - main_h - {_margin}";
+                positionY = $"main_h-overlay_h-{_margin}";
                 break;
             case WatermarkPosition.BottomRight:
-                positionX = $"w - main_w - {_margin}";
-                positionY = $"h - main_h - {_margin}";
+                positionX = $"main_w-overlay_w-{_margin}";
+                positionY = $"main_h-overlay_h-{_margin}";
                 break;
             case WatermarkPosition.Center:
-                positionX = "(w - overlay_w)/2";
-                positionY = "(h - overlay_h)/2";
+                positionX = "(main_w-overlay_w)/2";
+                positionY = "(main_h-overlay_h)/2";
                 break;
             default:
                 throw new InvalidOperationException("Unknown watermark position");
@@ -145,7 +145,7 @@ public string[] BuildArguments()
             "-i", _watermarkPath,
             "-filter_complex", BuildFilterComplex(),
             "-map", "[outv]",
-            "-map", "1:a?",
+            "-map", "0:a?",
             "-c:v", "libx264",
             "-crf", "23",
             "-preset", "fast",
@@ -169,7 +169,7 @@ public async Task RunAsync(string ffmpegPath = "ffmpeg", CancellationToken ct = 
             StartInfo = new System.Diagnostics.ProcessStartInfo
             {
                 FileName = ffmpegPath,
-                Arguments = string.Join(" ", arguments),
+                Arguments = string.Join(" ", System.Linq.Enumerable.Select(arguments, a => a.Contains(' ') ? $"\"{a}\"" : a)),
                 RedirectStandardOutput = true,
                 RedirectStandardError = true,
                 UseShellExecute = false,
