@@ -1,5 +1,15 @@
 # ffmpeg-fluent
 
+## Architecture
+
+FFmpegFluent is a fluent C# DSL that shells out to the `ffmpeg`/`ffprobe` CLI - no native
+bindings, no dependencies beyond the BCL. It has two layers: a composable core
+(`FFmpegCommand` + `InputFile`/`OutputFile`/`FilterGraph` with progress reporting via
+`FFmpegProgress`) and self-contained presets for common jobs (concat, GIF, thumbnails,
+audio extraction, watermarking, media probing). See
+[docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for the full component breakdown, data flow,
+and known limitations.
+
 ## HardwareAccelOptions
 The `HardwareAccelOptions` type allows you to configure hardware acceleration options for FFmpeg. It provides a way to specify the hardware acceleration kind, device, and input arguments.
 
