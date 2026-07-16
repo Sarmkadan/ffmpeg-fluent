@@ -50,7 +50,7 @@ public sealed class FFmpegProgress
         var frameMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"frame=\s*(\d+)");
         var timeMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"time=(\d{2}:\d{2}:\d{2}\.\d{2,})");
         var fpsMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"fps=\s*(\d+\.?\d*)");
-        var bitrateMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"bitrate=\s*([\d.]+\s*[kKmMgG]?bps)");
+        var bitrateMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"bitrate=\s*([\d.]+\s*[kKmMgG]?(?:bits/s|bps))");
         var speedMatch = System.Text.RegularExpressions.Regex.Match(ffmpegStdErrLine, @"speed=\s*(\d+\.?\d*)x");
 
         if (!timeMatch.Success)
@@ -82,9 +82,17 @@ public sealed class FFmpegProgress
 
         var hours = int.Parse(parts[0], CultureInfo.InvariantCulture);
         var minutes = int.Parse(parts[1], CultureInfo.InvariantCulture);
-        var secondsParts = parts[2].Split('.', StringSplitOptions.RemoveEmptyEntries);
-        var seconds = int.Parse(secondsParts[0], CultureInfo.InvariantCulture);
-        var milliseconds = secondsParts.Length > 1 ? int.Parse(secondsParts[1], CultureInfo.InvariantCulture) : 0;
+        var seconds = int.Parse(parts[2], CultureInfo.InvariantCulture);
+
+        // The fractional part is a decimal fraction of a second, not milliseconds:
+        // ffmpeg prints centiseconds ("10.50" = 10 s 500 ms), so scale by digit count.
+        var milliseconds = 0;
+        if (parts.Length > 3)
+        {
+            var fraction = parts[3];
+            var fractionValue = int.Parse(fraction, CultureInfo.InvariantCulture);
+            milliseconds = (int)Math.Round(fractionValue * 1000 / Math.Pow(10, fraction.Length));
+        }
 
         return new TimeSpan(0, hours, minutes, seconds, milliseconds);
     }
