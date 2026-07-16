@@ -113,28 +113,30 @@ public sealed class GifPreset
             args.Add(_duration.Value.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
         }
 
-        args.Add("-vf");
+        args.Add("-filter_complex");
 
-        var filters = new System.Collections.Generic.List<string>();
+        var preFilters = new System.Collections.Generic.List<string>();
 
         if (_width.HasValue)
         {
-            filters.Add($"scale={_width.Value}:-1:flags=lanczos");
+            preFilters.Add($"scale={_width.Value}:-1:flags=lanczos");
         }
 
-        filters.Add("fps");
-        filters.Add(_fps.ToString(System.Globalization.CultureInfo.InvariantCulture));
+        preFilters.Add($"fps={_fps.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
+        preFilters.Add("split[s0][s1]");
 
-        filters.Add("split[s0][s1]");
-        filters.Add("[s0]palettegen=stats_mode=diff[p]");
-        filters.Add("[s1][p]paletteuse");
+        // Linear filters are comma-chained; labeled palette segments are separate
+        // chains and must be joined with ';' (which also requires -filter_complex,
+        // since -vf only accepts a single linear chain).
+        var filterComplex = string.Join(",", preFilters)
+            + ";[s0]palettegen=stats_mode=diff[p]"
+            + ";[s1][p]paletteuse";
 
-        args.Add(string.Join(",", filters));
+        args.Add(filterComplex);
 
         args.Add("-gifflags");
         args.Add("+transdiff");
 
-        args.Add("-y");
         args.Add(_outputPath);
 
         return args.ToArray();
@@ -154,7 +156,7 @@ public sealed class GifPreset
             StartInfo = new System.Diagnostics.ProcessStartInfo
             {
                 FileName = ffmpegPath,
-                Arguments = string.Join(" ", arguments),
+                Arguments = string.Join(" ", System.Linq.Enumerable.Select(arguments, a => a.Contains(' ') ? $"\"{a}\"" : a)),
                 UseShellExecute = false,
                 CreateNoWindow = true,
                 RedirectStandardOutput = true,
