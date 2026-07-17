@@ -4,6 +4,8 @@ using System;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+#pragma warning disable CA1859 // Use concrete types when possible for improved performance
+
 namespace FFmpegFluent
 {
     /// <summary>
@@ -15,7 +17,8 @@ namespace FFmpegFluent
         {
             PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
             WriteIndented = false,
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
+            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
+            UnmappedMemberHandling = JsonUnmappedMemberHandling.Disallow
         };
 
         /// <summary>
@@ -41,15 +44,15 @@ namespace FFmpegFluent
         /// </summary>
         /// <param name="json">The JSON string to deserialize.</param>
         /// <returns>The deserialized hardware acceleration options, or <see langword="null"/> if the JSON is empty or whitespace.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
         /// <exception cref="JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
         public static HardwareAccelOptions? FromJson(string json)
         {
-            if (string.IsNullOrWhiteSpace(json))
-            {
-                return null;
-            }
+            ArgumentNullException.ThrowIfNull(json);
 
-            return JsonSerializer.Deserialize<HardwareAccelOptions>(json, _jsonOptions);
+            return string.IsNullOrWhiteSpace(json)
+                ? null
+                : JsonSerializer.Deserialize<HardwareAccelOptions>(json, _jsonOptions);
         }
 
         /// <summary>
@@ -58,8 +61,11 @@ namespace FFmpegFluent
         /// <param name="json">The JSON string to deserialize.</param>
         /// <param name="value">Receives the deserialized hardware acceleration options if successful.</param>
         /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
         public static bool TryFromJson(string json, out HardwareAccelOptions? value)
         {
+            ArgumentNullException.ThrowIfNull(json);
+
             value = null;
 
             if (string.IsNullOrWhiteSpace(json))
