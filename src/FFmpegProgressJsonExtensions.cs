@@ -22,16 +22,8 @@ public static class FFmpegProgressJsonExtensions
     /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
     /// <returns>A JSON string representation of the progress.</returns>
     /// <exception cref="ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
-    public static string ToJson(this FFmpegProgress value, bool indented = false)
-    {
-        ArgumentNullException.ThrowIfNull(value);
-
-        var options = indented
-            ? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
-            : _jsonOptions;
-
-        return JsonSerializer.Serialize(value, options);
-    }
+    public static string ToJson(this FFmpegProgress value, bool indented = false) =>
+        JsonSerializer.Serialize(value, GetJsonOptions(indented));
 
     /// <summary>
     /// Deserializes a JSON string to a <see cref="FFmpegProgress"/> instance.
@@ -44,12 +36,9 @@ public static class FFmpegProgressJsonExtensions
     {
         ArgumentNullException.ThrowIfNull(json);
 
-        if (string.IsNullOrWhiteSpace(json))
-        {
-            return null;
-        }
-
-        return JsonSerializer.Deserialize<FFmpegProgress>(json, _jsonOptions);
+        return string.IsNullOrWhiteSpace(json)
+            ? null
+            : JsonSerializer.Deserialize<FFmpegProgress>(json, _jsonOptions);
     }
 
     /// <summary>
@@ -58,6 +47,7 @@ public static class FFmpegProgressJsonExtensions
     /// <param name="json">The JSON string to deserialize.</param>
     /// <param name="value">The deserialized progress instance, or null if deserialization failed.</param>
     /// <returns>True if deserialization succeeded; otherwise, false.</returns>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
     public static bool TryFromJson(string json, out FFmpegProgress? value)
     {
         ArgumentException.ThrowIfNullOrEmpty(json);
@@ -73,4 +63,9 @@ public static class FFmpegProgressJsonExtensions
             return false;
         }
     }
+
+    private static JsonSerializerOptions GetJsonOptions(bool indented) =>
+        indented
+            ? new JsonSerializerOptions(_jsonOptions) { WriteIndented = true }
+            : _jsonOptions;
 }
