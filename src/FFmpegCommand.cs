@@ -116,9 +116,10 @@ public sealed class FFmpegCommand
     /// Runs the command asynchronously.
     /// </summary>
     /// <param name="progress">An optional progress reporter.</param>
+    /// <param name="progressAction">An optional progress callback action.</param>
     /// <param name="ct">An optional cancellation token.</param>
     /// <returns>The exit code of the command.</returns>
-    public async Task<int> RunAsync(IProgress<FFmpegProgress>? progress = null, CancellationToken ct = default)
+    public async Task<int> RunAsync(IProgress<FFmpegProgress>? progress = null, Action<FFmpegProgress>? progressAction = null, CancellationToken ct = default)
     {
         using var process = new Process
         {
@@ -149,6 +150,11 @@ public sealed class FFmpegCommand
                 if (progress != null && FFmpegProgress.TryParse(line, out var ffmpegProgress))
                 {
                     progress.Report(ffmpegProgress);
+                }
+
+                if (progressAction != null && FFmpegProgress.TryParse(line, out var ffmpegProgress2))
+                {
+                    progressAction(ffmpegProgress2);
                 }
             }
         }, ct);
