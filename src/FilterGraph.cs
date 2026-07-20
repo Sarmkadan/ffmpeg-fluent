@@ -1,3 +1,6 @@
+using System.Collections.Generic;
+using System.Linq;
+
 namespace FFmpegFluent;
 
 /// <summary>
@@ -7,6 +10,8 @@ public class FilterGraph
 {
     private readonly List<string> _filters = [];
     private readonly List<(string inputLabel, string filter, string outputLabel)> _chains = [];
+    private readonly HashSet<string> _producedLabels = [];
+    private readonly HashSet<string> _usedOutputLabels = [];
 
     /// <summary>
     /// Gets whether the filter graph is empty (no filters or chains defined).
@@ -81,6 +86,38 @@ public class FilterGraph
     }
 
     /// <summary>
+    /// Validates the filter graph structure.
+    /// </summary>
+    /// <exception cref="FFmpegException">Thrown when the graph has validation errors.</exception>
+    private void ValidateGraph()
+    {
+        foreach (var (inputLabel, filter, outputLabel) in _chains)
+        {
+            // Check if input label is a stream specifier (starts with [0: or [v: or [a: etc.)
+            if (!inputLabel.StartsWith('[') || !inputLabel.EndsWith(']'))
+            {
+                // Check if this label was produced by a previous chain
+                if (!_producedLabels.Contains(inputLabel))
+                {
+                    throw new FFmpegException($"Input label '{inputLabel}' is not a stream specifier and has not been produced by a previous filter chain.");
+                }
+            }
+
+            // Check for duplicate output labels
+            if (_usedOutputLabels.Contains(outputLabel))
+            {
+                throw new FFmpegException($"Output label '{outputLabel}' is used more than once. Each output label must be unique.");
+            }
+
+            // Mark this output label as used
+            _usedOutputLabels.Add(outputLabel);
+
+            // Mark this output label as produced for future chains to use as input
+            _producedLabels.Add(outputLabel);
+        }
+    }
+
+    /// <summary>
     /// Builds the complete filter_complex string.
     /// </summary>
     /// <returns>The complete filter_complex string.</returns>
@@ -90,6 +127,9 @@ public class FilterGraph
         {
             return string.Empty;
         }
+
+        // Validate the graph structure before building
+        ValidateGraph();
 
         var parts = new List<string>();
 
