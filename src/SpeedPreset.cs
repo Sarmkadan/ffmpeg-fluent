@@ -162,28 +162,36 @@ public sealed class SpeedPreset
         if (tempo < 0.5 || tempo > 2.0)
         {
             // Chain atempo filters for values outside the 0.5-2.0 range
-            var atempoCount = 0;
+            // We need to decompose the tempo into factors within 0.5-2.0 range
             var remainingTempo = tempo;
+            var filters = new List<string>();
 
+            // Decompose the tempo into chained atempo filters
             while (remainingTempo < 0.5 || remainingTempo > 2.0)
             {
-                // For very small values, use 0.5 as the base
-                var filterValue = Math.Max(0.5, Math.Min(2.0, remainingTempo));
-                output.Option("filter:a", $"atempo={filterValue}");
+                // For speedup (tempo > 2.0), use 2.0 as the base
+                // For slowdown (tempo < 0.5), use 0.5 as the base
+                var filterValue = remainingTempo > 2.0 ? 2.0 : 0.5;
+                filters.Add(filterValue.ToString(System.Globalization.CultureInfo.InvariantCulture));
                 remainingTempo /= filterValue;
-                atempoCount++;
+            }
+
+            // Apply all chained atempo filters
+            foreach (var filter in filters)
+            {
+                output.Option("filter:a", $"atempo={filter}");
             }
 
             // Apply the final atempo filter with the remaining tempo
             if (Math.Abs(remainingTempo - 1.0) > 0.001)
             {
-                output.Option("filter:a", $"atempo={remainingTempo}");
+                output.Option("filter:a", $"atempo={remainingTempo.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
             }
         }
         else if (Math.Abs(tempo - 1.0) > 0.001)
         {
             // Single atempo filter for values in the 0.5-2.0 range
-            output.Option("filter:a", $"atempo={tempo}");
+            output.Option("filter:a", $"atempo={tempo.ToString(System.Globalization.CultureInfo.InvariantCulture)}");
         }
 
         // Handle pitch preservation if requested
