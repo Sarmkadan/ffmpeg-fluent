@@ -96,6 +96,19 @@ public sealed class OutputFile
     }
 
     /// <summary>
+    /// Adds a metadata key/value pair to the FFmpeg command, escaping the value.
+    /// </summary>
+    /// <param name="key">The metadata key.</param>
+    /// <param name="value">The metadata value.</param>
+    /// <returns>The current <see cref="OutputFile"/> instance for method chaining.</returns>
+    public OutputFile WithMetadata(string key, string value)
+    {
+        var escapedValue = value.Replace("'", "'\\''");
+        _options.Add($"-metadata {key}='{escapedValue}'");
+        return this;
+    }
+
+    /// <summary>
     /// Adds a metadata key/value pair to the FFmpeg command.
     /// </summary>
     /// <param name="key">The metadata key.</param>
