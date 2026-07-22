@@ -55,6 +55,15 @@ public static class FFmpegProgressValidation
             problems.Add("SpeedX must be positive if set.");
         }
 
+        // Validate Percent (must be between 0 and 100 if set)
+        if (value.Percent is { } percent)
+        {
+            if (percent < 0 || percent > 100)
+            {
+                problems.Add("Percent must be between 0 and 100 if set.");
+            }
+        }
+
         return problems.AsReadOnly();
     }
 

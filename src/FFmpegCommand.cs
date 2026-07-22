@@ -285,6 +285,8 @@ public sealed class FFmpegCommand
                     }
 
                     stderrLines.Enqueue(line);
+
+                    // Try to parse structured progress data
                     if (progress != null && FFmpegProgress.TryParse(line, out var ffmpegProgress) && ffmpegProgress != null)
                     {
                         progress.Report(ffmpegProgress);
