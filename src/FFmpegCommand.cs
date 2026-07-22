@@ -130,7 +130,7 @@ args.AddRange(input.BuildArgs());
 
 if (!_filterGraph.IsEmpty)
 {
-args.Add($"-filter_complex {_filterGraph.Build()}");
+args.Add($"-filter_complex \"{_filterGraph.Build()}\"");
 }
 
 foreach (var output in _outputs)
@@ -147,7 +147,7 @@ args.Add("1");
 args.Add("-an");
 args.Add("-f");
 args.Add("null");
-args.Add(OperatingSystem.IsWindows() ? "NUL" : "/dev/null");
+args.Add(OperatingSystem.IsWindows() ? "NUL" : "nul");
 }
 else if (pass == 2)
 {
@@ -177,7 +177,7 @@ args.AddRange(input.BuildArgs());
 
 if (!_filterGraph.IsEmpty)
 {
-args.Add($"-filter_complex {_filterGraph.Build()}");
+args.Add($"-filter_complex \"{_filterGraph.Build()}\"");
 }
 
 foreach (var output in _outputs)

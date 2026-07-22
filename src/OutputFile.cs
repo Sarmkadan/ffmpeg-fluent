@@ -141,6 +141,6 @@ public sealed class OutputFile
             yield return audioArg;
         }
 
-        yield return Path;
+        yield return $"\"{Path}\"";
     }
 }
