@@ -1,7 +1,6 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Linq;
 using System.Reflection;
 using System.Text;
 
@@ -20,9 +19,10 @@ public static class FFmpegCommandExtensions
     /// </summary>
     /// <param name="command">The command to preview.</param>
     /// <returns>A string containing the preview.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="command"/> is <see langword="null"/></exception>
     public static string Preview(this FFmpegCommand command)
     {
-        if (command == null) throw new ArgumentNullException(nameof(command));
+        ArgumentNullException.ThrowIfNull(command);
 
         var sb = new StringBuilder();
 
@@ -54,17 +54,18 @@ public static class FFmpegCommandExtensions
 
     private static void AppendEnumerable(StringBuilder sb, object? value)
     {
-        if (value is IEnumerable enumerable && !(value is string))
+        if (value is IEnumerable enumerable && value is not string)
         {
             int i = 0;
             foreach (var item in enumerable)
             {
-                sb.AppendLine($"  [{i}] {item}");
+                sb.AppendLine($" [{i}] {item}");
                 i++;
             }
+
             if (i == 0)
             {
-                sb.AppendLine("  (none)");
+                sb.AppendLine(" (none)");
             }
         }
         else
@@ -75,23 +76,16 @@ public static class FFmpegCommandExtensions
 
     private static void AppendSingle(StringBuilder sb, object? value)
     {
-        if (value == null)
-        {
-            sb.AppendLine("  (none)");
-        }
-        else
-        {
-            sb.AppendLine($"  {value}");
-        }
+        sb.AppendLine(value == null ? " (none)" : $" {value}");
     }
 
     private static object? GetFieldOrProperty(object obj, string name)
     {
+        ArgumentNullException.ThrowIfNull(obj);
+        ArgumentException.ThrowIfNullOrEmpty(name);
+
         var type = obj.GetType();
         var field = type.GetField(name, BindingFlags.NonPublic | BindingFlags.Instance);
-        if (field != null) return field.GetValue(obj);
-
-        var prop = type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance);
-        return prop?.GetValue(obj);
+        return field != null ? field.GetValue(obj) : type.GetProperty(name, BindingFlags.NonPublic | BindingFlags.Instance)?.GetValue(obj);
     }
 }
