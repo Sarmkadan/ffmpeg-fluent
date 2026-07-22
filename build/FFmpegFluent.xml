@@ -1,0 +1,2409 @@
+<?xml version="1.0"?>
+<doc>
+    <assembly>
+        <name>FFmpegFluent</name>
+    </assembly>
+    <members>
+        <member name="T:FFmpegFluent.AudioOptions">
+            <summary>
+            Fluent class for configuring audio output options.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.AudioOptions.Codec(System.String)">
+            <summary>
+            Sets the audio codec.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.AudioOptions.Bitrate(System.String)">
+            <summary>
+            Sets the audio bitrate.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.AudioOptions.SampleRate(System.Int32)">
+            <summary>
+            Sets the audio sample rate in Hz.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.AudioOptions.Channels(System.Int32)">
+            <summary>
+            Sets the number of audio channels.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.AudioOptions.Volume(System.Double)">
+            <summary>
+            Sets the audio volume multiplier (ffmpeg filter).
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.AudioOptions.NoAudio">
+            <summary>
+            Disables audio output.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.AudioOptions.BuildArgs">
+            <summary>
+            Builds the ffmpeg command line arguments for the configured audio options.
+            </summary>
+        </member>
+        <member name="T:FFmpegFluent.AudioOptionsJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization extensions for <see cref="T:FFmpegFluent.AudioOptions"/>.
+            Supports formatting control and error handling for JSON operations.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.AudioOptionsJsonExtensions.ToJson(FFmpegFluent.AudioOptions,System.Boolean)">
+            <summary>
+            Serializes the specified <see cref="T:FFmpegFluent.AudioOptions"/> instance to a JSON string.
+            </summary>
+            <param name="value">The audio options to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation for readability.</param>
+            <returns>A JSON string representation of the audio options.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.AudioOptionsJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string to an <see cref="T:FFmpegFluent.AudioOptions"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>
+            The deserialized <see cref="T:FFmpegFluent.AudioOptions"/> instance, or <see langword="null"/>
+            if deserialization fails due to invalid JSON format.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.AudioOptionsJsonExtensions.TryFromJson(System.String,FFmpegFluent.AudioOptions@)">
+            <summary>
+            Attempts to deserialize a JSON string to an <see cref="T:FFmpegFluent.AudioOptions"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">Receives the deserialized <see cref="T:FFmpegFluent.AudioOptions"/> instance if successful.</param>
+            <returns>
+            <see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="T:FFmpegFluent.ConcatPreset">
+            <summary>
+            Preset for concatenating multiple media files using FFmpeg's concat demuxer.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPreset.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FFmpegFluent.ConcatPreset"/> class.
+            </summary>
+            <param name="outputPath">The path where the concatenated file will be written.</param>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPreset.AddInput(System.String)">
+            <summary>
+            Adds an input file to be concatenated.
+            </summary>
+            <param name="path">Path to the input file.</param>
+            <returns>The same <see cref="T:FFmpegFluent.ConcatPreset"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPreset.WithReencode(System.String,System.String)">
+            <summary>
+            Configures the preset to re‑encode the output using the specified codecs.
+            If not called, the preset will use <c>-c copy</c>.
+            </summary>
+            <param name="videoCodec">Video codec to use (default: libx264).</param>
+            <param name="audioCodec">Audio codec to use (default: aac).</param>
+            <returns>The same <see cref="T:FFmpegFluent.ConcatPreset"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPreset.BuildConcatListContent">
+            <summary>
+            Builds the content for the temporary concat list file.
+            </summary>
+            <returns>A string suitable for FFmpeg's concat demuxer.</returns>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPreset.RunAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Executes the concatenation using FFmpeg.
+            </summary>
+            <param name="ffmpegPath">Path to the ffmpeg executable (default: "ffmpeg").</param>
+            <param name="ct">Cancellation token.</param>
+        </member>
+        <member name="T:FFmpegFluent.ConcatPresetExtensions">
+            <summary>
+            Extension methods for <see cref="T:FFmpegFluent.ConcatPreset"/> to provide fluent and convenient operations.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetExtensions.AddInputs(FFmpegFluent.ConcatPreset,System.String[])">
+            <summary>
+            Adds multiple input files to the preset at once.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <param name="paths">Paths to the input files.</param>
+            <returns>The same <see cref="T:FFmpegFluent.ConcatPreset"/> instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> or <paramref name="paths"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetExtensions.AddInputsFromDirectory(FFmpegFluent.ConcatPreset,System.String,System.String,System.IO.SearchOption)">
+            <summary>
+            Adds multiple input files from a directory matching a search pattern.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <param name="directoryPath">Path to the directory containing input files.</param>
+            <param name="searchPattern">Search pattern (e.g., "*.mp4", "*.mkv").</param>
+            <param name="searchOption">Whether to include subdirectories.</param>
+            <returns>The same <see cref="T:FFmpegFluent.ConcatPreset"/> instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="directoryPath"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+            <exception cref="T:System.IO.DirectoryNotFoundException">The specified directory does not exist.</exception>
+            <exception cref="T:System.InvalidOperationException">No files matching the pattern were found in the directory.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetExtensions.WithNvencReencode(FFmpegFluent.ConcatPreset,System.String)">
+            <summary>
+            Configures the preset to re-encode with hardware acceleration using NVENC (NVIDIA).
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <param name="presetName">NVENC preset (e.g., "fast", "medium", "slow").</param>
+            <returns>The same <see cref="T:FFmpegFluent.ConcatPreset"/> instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="presetName"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetExtensions.WithQsvReencode(FFmpegFluent.ConcatPreset,System.String)">
+            <summary>
+            Configures the preset to re-encode with hardware acceleration using QuickSync (Intel).
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <param name="presetName">QSV preset (e.g., "fast", "medium", "slow").</param>
+            <returns>The same <see cref="T:FFmpegFluent.ConcatPreset"/> instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="presetName"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetExtensions.WithVideoQualityPresetInternal(FFmpegFluent.ConcatPreset,System.String)">
+            <summary>
+            Sets the video quality preset for re-encoding operations.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <param name="presetName">Quality preset (e.g., "ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow").</param>
+            <returns>The same <see cref="T:FFmpegFluent.ConcatPreset"/> instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="presetName"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetExtensions.WithVideoQualityPreset(FFmpegFluent.ConcatPreset,System.String)">
+            <summary>
+            Sets the video quality preset for re-encoding operations.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <param name="presetName">Quality preset (e.g., "ultrafast", "superfast", "veryfast", "faster", "fast", "medium", "slow", "slower", "veryslow").</param>
+            <returns>The same <see cref="T:FFmpegFluent.ConcatPreset"/> instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="presetName"/> is <see langword="null"/>, empty, or consists only of whitespace.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetExtensions.WithLeadInDelay(FFmpegFluent.ConcatPreset,System.Int32)">
+            <summary>
+            Adds a delay before the first input file, creating a "lead-in" effect.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <param name="delaySeconds">Delay duration in seconds.</param>
+            <returns>The same <see cref="T:FFmpegFluent.ConcatPreset"/> instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="delaySeconds"/> is negative.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetExtensions.RunAndGetOutputPathAsync(FFmpegFluent.ConcatPreset,System.String)">
+            <summary>
+            Executes the concatenation and returns the output file path.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <param name="ffmpegPath">Path to the ffmpeg executable.</param>
+            <returns>The path to the concatenated output file.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.InvalidOperationException">Could not access output path field or output path is not set.</exception>
+        </member>
+        <member name="T:FFmpegFluent.ConcatPresetJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization extensions for <see cref="T:FFmpegFluent.ConcatPreset"/> objects.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetJsonExtensions.ToJson(FFmpegFluent.ConcatPreset,System.Boolean)">
+            <summary>
+            Serializes a <see cref="T:FFmpegFluent.ConcatPreset"/> instance to a JSON string.
+            </summary>
+            <param name="value">The <see cref="T:FFmpegFluent.ConcatPreset"/> instance to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation for readability.</param>
+            <returns>A JSON string representation of the <see cref="T:FFmpegFluent.ConcatPreset"/>.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string to a <see cref="T:FFmpegFluent.ConcatPreset"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>A <see cref="T:FFmpegFluent.ConcatPreset"/> instance, or <see langword="null"/> if the JSON represents a null value.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="json"/> is <see langword="null"/>, empty, or whitespace.</exception>
+            <exception cref="T:System.Text.Json.JsonException">The JSON is invalid or cannot be deserialized to a <see cref="T:FFmpegFluent.ConcatPreset"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ConcatPresetJsonExtensions.TryFromJson(System.String,FFmpegFluent.ConcatPreset@)">
+            <summary>
+            Attempts to deserialize a JSON string to a <see cref="T:FFmpegFluent.ConcatPreset"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">Receives the deserialized <see cref="T:FFmpegFluent.ConcatPreset"/> instance if successful; otherwise, <see langword="null"/>.</param>
+            <returns><see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="T:FFmpegFluent.ExtractAudioPreset">
+            <summary>
+            Represents a preset for extracting audio from a video file using FFmpeg.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPreset.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FFmpegFluent.ExtractAudioPreset"/> class.
+            </summary>
+            <param name="inputPath">The path to the input video file.</param>
+            <param name="outputPath">The path to the output audio file.</param>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPreset.WithCodec(System.String)">
+            <summary>
+            Configures the audio codec to use for extraction.
+            </summary>
+            <param name="codec">The audio codec to use.</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.ExtractAudioPreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPreset.WithBitrate(System.Int32)">
+            <summary>
+            Configures the bitrate of the extracted audio.
+            </summary>
+            <param name="kbps">The bitrate in kilobits per second.</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.ExtractAudioPreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPreset.CopyStream">
+            <summary>
+            Configures the extraction to copy the audio stream instead of re-encoding it.
+            </summary>
+            <returns>The current instance of <see cref="T:FFmpegFluent.ExtractAudioPreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPreset.StreamIndex(System.Int32)">
+            <summary>
+            Configures the stream index of the audio to extract.
+            </summary>
+            <param name="index">The stream index of the audio to extract.</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.ExtractAudioPreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPreset.BuildArguments">
+            <summary>
+            Builds the FFmpeg arguments for extracting the audio.
+            </summary>
+            <returns>An array of FFmpeg arguments.</returns>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPreset.RunAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Runs the FFmpeg command to extract the audio.
+            </summary>
+            <param name="ffmpegPath">The path to the FFmpeg executable.</param>
+            <param name="ct">The cancellation token.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+        </member>
+        <member name="T:FFmpegFluent.ExtractAudioPresetExtensions">
+            <summary>
+            Provides extension methods for configuring audio extraction presets.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPresetExtensions.AsMp3(FFmpegFluent.ExtractAudioPreset)">
+            <summary>
+            Sets the output format to MP3 with a default bitrate of 192 kbps.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <returns>A new preset instance with MP3 codec and 192 kbps bitrate configured.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPresetExtensions.AsAac(FFmpegFluent.ExtractAudioPreset)">
+            <summary>
+            Sets the output format to AAC with a default bitrate of 128 kbps.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <returns>A new preset instance with AAC codec and 128 kbps bitrate configured.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPresetExtensions.AsFlac(FFmpegFluent.ExtractAudioPreset)">
+            <summary>
+            Sets the output format to FLAC for lossless audio extraction.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <returns>A new preset instance with FLAC codec configured for lossless output.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPresetExtensions.AsWav(FFmpegFluent.ExtractAudioPreset)">
+            <summary>
+            Sets the output format to WAV for uncompressed audio extraction.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <returns>A new preset instance with PCM_S16LE codec configured for WAV output.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPresetExtensions.WithBitrate(FFmpegFluent.ExtractAudioPreset,System.Int32)">
+            <summary>
+            Sets a custom bitrate for the audio output.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <param name="bitrateKbps">The target bitrate in kilobits per second.</param>
+            <returns>The preset instance with the specified bitrate configured.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="bitrateKbps"/> is not positive.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPresetExtensions.CopyAudioStream(FFmpegFluent.ExtractAudioPreset)">
+            <summary>
+            Extracts audio from the first audio stream without re-encoding (stream copy).
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <returns>The preset instance configured to copy the audio stream.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPresetExtensions.FromStream(FFmpegFluent.ExtractAudioPreset,System.Int32)">
+            <summary>
+            Extracts audio from a specific stream by index.
+            </summary>
+            <param name="preset">The preset instance.</param>
+            <param name="streamIndex">The zero-based index of the audio stream to extract.</param>
+            <returns>The preset instance configured to extract the specified stream.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="streamIndex"/> is negative.</exception>
+        </member>
+        <member name="T:FFmpegFluent.ExtractAudioPresetJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization extension methods for <see cref="T:FFmpegFluent.ExtractAudioPreset"/> objects.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPresetJsonExtensions.ToJson(FFmpegFluent.ExtractAudioPreset,System.Boolean)">
+            <summary>
+            Serializes an <see cref="T:FFmpegFluent.ExtractAudioPreset"/> instance to a JSON string.
+            </summary>
+            <param name="value">The <see cref="T:FFmpegFluent.ExtractAudioPreset"/> instance to serialize.</param>
+            <param name="indented">If true, the JSON output will be formatted with indentation for readability.</param>
+            <returns>A JSON string representation of the <see cref="T:FFmpegFluent.ExtractAudioPreset"/>.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPresetJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string into an <see cref="T:FFmpegFluent.ExtractAudioPreset"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>The deserialized <see cref="T:FFmpegFluent.ExtractAudioPreset"/> instance, or null if <paramref name="json"/> is null or whitespace.</returns>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="json"/> is null or whitespace.</exception>
+            <exception cref="T:System.Text.Json.JsonException">Thrown when deserialization fails, wrapped with a message.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ExtractAudioPresetJsonExtensions.TryFromJson(System.String,FFmpegFluent.ExtractAudioPreset@)">
+            <summary>
+            Attempts to deserialize a JSON string into an <see cref="T:FFmpegFluent.ExtractAudioPreset"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">When this method returns, contains the deserialized <see cref="T:FFmpegFluent.ExtractAudioPreset"/> instance if deserialization succeeded, or null if deserialization failed.</param>
+            <returns>True if deserialization succeeded; otherwise, false.</returns>
+        </member>
+        <member name="T:FFmpegFluent.FFmpegCommand">
+            <summary>
+            Represents a command to be executed with FFmpeg.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommand.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FFmpegFluent.FFmpegCommand"/> class.
+            </summary>
+            <param name="ffmpegPath">The path to the FFmpeg executable.</param>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommand.Create(System.String)">
+            <summary>
+            Creates a new instance of the <see cref="T:FFmpegFluent.FFmpegCommand"/> class.
+            </summary>
+            <param name="ffmpegPath">The path to the FFmpeg executable. Defaults to "ffmpeg".</param>
+            <returns>A new instance of the <see cref="T:FFmpegFluent.FFmpegCommand"/> class.</returns>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommand.AddInput(System.String,System.Action{FFmpegFluent.InputFile})">
+            <summary>
+            Adds an input file to the command.
+            </summary>
+            <param name="path">The path to the input file.</param>
+            <param name="cfg">An optional configuration action for the input file.</param>
+            <returns>The current instance of the <see cref="T:FFmpegFluent.FFmpegCommand"/> class.</returns>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommand.WithFilterGraph(System.Action{FFmpegFluent.FilterGraph})">
+            <summary>
+            Configures the filter graph for the command.
+            </summary>
+            <param name="cfg">An action to configure the filter graph.</param>
+            <returns>The current instance of the <see cref="T:FFmpegFluent.FFmpegCommand"/> class.</returns>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommand.AddOutput(System.String,System.Action{FFmpegFluent.OutputFile})">
+            <summary>
+            Adds an output file to the command.
+            </summary>
+            <param name="path">The path to the output file.</param>
+            <param name="cfg">An optional configuration action for the output file.</param>
+            <returns>The current instance of the <see cref="T:FFmpegFluent.FFmpegCommand"/> class.</returns>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommand.GlobalOption(System.String,System.String)">
+            <summary>
+            Adds a global option to the command.
+            </summary>
+            <param name="key">The key of the global option.</param>
+            <param name="value">The value of the global option. Defaults to null.</param>
+            <returns>The current instance of the <see cref="T:FFmpegFluent.FFmpegCommand"/> class.</returns>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommand.WithTwoPass(System.String)">
+            <summary>
+            Configures two-pass encoding for the command.
+            </summary>
+            <param name="logFilePath">Path to the file where FFmpeg will store pass statistics. If null, a temporary file will be created.</param>
+            <returns>The current instance of the <see cref="T:FFmpegFluent.FFmpegCommand"/> class.</returns>
+            <remarks>
+            Two-pass encoding improves quality for variable bitrate codecs like libx264.
+            Call <see cref="M:FFmpegFluent.FFmpegCommand.BuildPassArguments(System.Int32)"/> to get the arguments for each pass.
+            </remarks>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommand.BuildPassArguments(System.Int32)">
+            <summary>
+            Builds the command line arguments for the specified encoding pass.
+            </summary>
+            <param name="pass">The pass number (1 or 2).</param>
+            <returns>An <see cref="!:IEnumerable"/> of <see cref="T:System.String"/> containing the arguments for the specified pass.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when <paramref name="pass"/> is not 1 or 2.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommand.BuildCommandLine">
+            <summary>
+            Builds the command line arguments for the command.
+            </summary>
+            <returns>The command line arguments as a string.</returns>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommand.RunAsync(System.IProgress{FFmpegFluent.FFmpegProgress},System.Action{FFmpegFluent.FFmpegProgress},System.Threading.CancellationToken)">
+            <summary>
+            Runs the command asynchronously.
+            </summary>
+            <param name="progress">An optional progress reporter.</param>
+            <param name="progressAction">An optional progress callback action.</param>
+            <param name="ct">An optional cancellation token.</param>
+            <returns>The exit code of the command.</returns>
+        </member>
+        <member name="T:FFmpegFluent.FFmpegCommandExtensions">
+            <summary>
+            Extension methods for <see cref="T:FFmpegFluent.FFmpegCommand"/>.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommandExtensions.Preview(FFmpegFluent.FFmpegCommand)">
+            <summary>
+            Returns a dry‑run description of the command.
+            The result contains the full command line produced by <see cref="M:FFmpegFluent.FFmpegCommand.BuildCommandLine"/>
+            followed by a human‑readable multi‑line breakdown of global options, inputs, filter graph,
+            and outputs. No process is started.
+            </summary>
+            <param name="command">The command to preview.</param>
+            <returns>A string containing the preview.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="command"/> is <see langword="null"/></exception>
+        </member>
+        <member name="T:FFmpegFluent.FFmpegCommandJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization extensions for <see cref="T:FFmpegFluent.FFmpegCommand"/> objects.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommandJsonExtensions.ToJson(FFmpegFluent.FFmpegCommand,System.Boolean)">
+            <summary>
+            Serializes an <see cref="T:FFmpegFluent.FFmpegCommand"/> instance to a JSON string.
+            </summary>
+            <param name="value">The FFmpeg command to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation for readability.</param>
+            <returns>A JSON string representation of the FFmpeg command.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommandJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string to an <see cref="T:FFmpegFluent.FFmpegCommand"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>
+            The deserialized <see cref="T:FFmpegFluent.FFmpegCommand"/>, or null if deserialization fails.
+            </returns>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommandJsonExtensions.TryFromJson(System.String,FFmpegFluent.FFmpegCommand@)">
+            <summary>
+            Attempts to deserialize a JSON string to an <see cref="T:FFmpegFluent.FFmpegCommand"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">Receives the deserialized <see cref="T:FFmpegFluent.FFmpegCommand"/> if successful.</param>
+            <returns>True if deserialization succeeds; otherwise, false.</returns>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommandValidation.Validate(FFmpegFluent.FFmpegCommand)">
+            <summary>
+            Validates the FFmpegCommand instance and returns a list of human-readable problems.
+            Checks for null/empty inputs and outputs, empty filter graphs, and invalid paths.
+            </summary>
+            <param name="value">The FFmpegCommand to validate.</param>
+            <returns>List of validation problems (empty if valid).</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommandValidation.IsValid(FFmpegFluent.FFmpegCommand)">
+            <summary>
+            Determines whether the FFmpegCommand instance is valid.
+            </summary>
+            <param name="value">The FFmpegCommand to validate.</param>
+            <returns>True if valid; otherwise false.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegCommandValidation.EnsureValid(FFmpegFluent.FFmpegCommand)">
+            <summary>
+            Ensures the FFmpegCommand instance is valid, throwing <see cref="T:System.ArgumentException"/> if not.
+            </summary>
+            <param name="value">The FFmpegCommand to validate.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when validation fails.</exception>
+        </member>
+        <member name="T:FFmpegFluent.FFmpegException">
+            <summary>
+            Represents an exception thrown when an FFmpeg command fails.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.FFmpegException.ExitCode">
+            <summary>
+            Gets the exit code of the FFmpeg command.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.FFmpegException.StdErr">
+            <summary>
+            Gets the standard error output of the FFmpeg command.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.FFmpegException.CommandLine">
+            <summary>
+            Gets the command line used to run the FFmpeg command.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegException.#ctor(System.String,System.Int32,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FFmpegFluent.FFmpegException"/> class.
+            </summary>
+            <param name="commandLine">The command line used to run the FFmpeg command.</param>
+            <param name="exitCode">The exit code of the FFmpeg command.</param>
+            <param name="stdErr">The standard error output of the FFmpeg command.</param>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegException.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FFmpegFluent.FFmpegException"/> class with a custom error message.
+            </summary>
+            <param name="message">The error message describing the exception.</param>
+        </member>
+        <member name="T:FFmpegFluent.FFmpegExceptionExtensions">
+            <summary>
+            Provides extension methods for <see cref="T:FFmpegFluent.FFmpegException"/> to facilitate error handling and message formatting.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegExceptionExtensions.GetErrorMessage(FFmpegFluent.FFmpegException)">
+            <summary>
+            Gets a formatted error message containing the FFmpeg exit code, command line, and standard error output.
+            </summary>
+            <param name="exception">The <see cref="T:FFmpegFluent.FFmpegException"/> instance.</param>
+            <returns>A formatted error message string.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="exception"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegExceptionExtensions.IsSuccessful(FFmpegFluent.FFmpegException)">
+            <summary>
+            Determines whether the FFmpeg command completed successfully (exit code 0).
+            </summary>
+            <param name="exception">The <see cref="T:FFmpegFluent.FFmpegException"/> instance.</param>
+            <returns><see langword="true"/> if the exit code is 0; otherwise, <see langword="false"/>.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="exception"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegExceptionExtensions.GetCommandLineWithExitCode(FFmpegFluent.FFmpegException)">
+            <summary>
+            Gets the command line with the exit code appended for diagnostic purposes.
+            </summary>
+            <param name="exception">The <see cref="T:FFmpegFluent.FFmpegException"/> instance.</param>
+            <returns>A string containing the command line followed by the exit code.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="exception"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegExceptionExtensions.GetDetailedErrorMessage(FFmpegFluent.FFmpegException)">
+            <summary>
+            Gets a detailed error message containing comprehensive information about the FFmpeg failure.
+            </summary>
+            <param name="exception">The <see cref="T:FFmpegFluent.FFmpegException"/> instance.</param>
+            <returns>A detailed error message string with command line, exit code, and standard error.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="exception"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="T:FFmpegFluent.FFmpegExceptionJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization for <see cref="T:FFmpegFluent.FFmpegException"/> instances.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegExceptionJsonExtensions.ToJson(FFmpegFluent.FFmpegException,System.Boolean)">
+            <summary>
+            Serializes the <see cref="T:FFmpegFluent.FFmpegException"/> to a JSON string.
+            </summary>
+            <param name="value">The exception instance to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation.</param>
+            <returns>A JSON representation of the exception.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="value"/> is <c>null</c>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegExceptionJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string into an <see cref="T:FFmpegFluent.FFmpegException"/> instance.
+            </summary>
+            <param name="json">The JSON string.</param>
+            <returns>The deserialized exception, or <c>null</c> if the JSON is <c>null</c>, empty, or whitespace.</returns>
+            <exception cref="T:System.Text.Json.JsonException">Thrown when JSON is invalid or cannot be deserialized.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegExceptionJsonExtensions.TryFromJson(System.String,FFmpegFluent.FFmpegException@)">
+            <summary>
+            Tries to deserialize a JSON string into an <see cref="T:FFmpegFluent.FFmpegException"/> instance.
+            </summary>
+            <param name="json">The JSON string.</param>
+            <param name="value">When this method returns, contains the deserialized exception if the operation succeeded; otherwise, <c>null</c>.</param>
+            <returns><c>true</c> if deserialization succeeded; otherwise, <c>false</c>.</returns>
+        </member>
+        <member name="T:FFmpegFluent.FFmpegProgress">
+            <summary>
+            Represents FFmpeg processing progress information parsed from stderr output.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.FFmpegProgress.ProcessedTime">
+            <summary>
+            Gets the processed time.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.FFmpegProgress.Fps">
+            <summary>
+            Gets the frames per second, or null if not available.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.FFmpegProgress.Bitrate">
+            <summary>
+            Gets the bitrate, or null if not available.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.FFmpegProgress.FrameCount">
+            <summary>
+            Gets the frame count, or null if not available.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.FFmpegProgress.SpeedX">
+            <summary>
+            Gets the speed multiplier (e.g., 2.3x), or null if not available.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgress.TryParse(System.String,FFmpegFluent.FFmpegProgress@)">
+            <summary>
+            Attempts to parse an FFmpeg progress line from stderr output.
+            </summary>
+            <param name="ffmpegStdErrLine">The stderr line to parse.</param>
+            <param name="progress">The parsed progress, or null if parsing failed.</param>
+            <returns>True if parsing succeeded; otherwise, false.</returns>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgress.TryParse(System.String,FFmpegFluent.FFmpegProgress)">
+            <summary>
+            Attempts to parse an FFmpeg progress line and update an existing progress instance incrementally.
+            </summary>
+            <param name="line">The stderr line to parse.</param>
+            <param name="current">The progress instance to update with parsed values. If null, a new instance is created.</param>
+            <returns>True if parsing succeeded and at least one field was updated; otherwise, false.</returns>
+        </member>
+        <member name="T:FFmpegFluent.FFmpegProgressExtensions">
+            <summary>
+            Provides extension methods for <see cref="T:FFmpegFluent.FFmpegProgress"/> to enhance functionality with common operations.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgressExtensions.GetRemainingTime(FFmpegFluent.FFmpegProgress)">
+            <summary>
+            Calculates the estimated remaining time based on processed time and speed multiplier.
+            </summary>
+            <param name="progress">The FFmpeg progress instance.</param>
+            <returns>The estimated remaining time, or null if speed is not available or is zero/negative.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="progress"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgressExtensions.IsComplete(FFmpegFluent.FFmpegProgress)">
+            <summary>
+            Determines if the processing is complete based on whether speed has dropped to zero or below.
+            </summary>
+            <param name="progress">The FFmpeg progress instance.</param>
+            <returns>True if processing appears to be complete; otherwise, false.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="progress"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgressExtensions.ToProgressString(FFmpegFluent.FFmpegProgress,System.Boolean)">
+            <summary>
+            Gets a formatted progress string showing processed time, speed, and fps.
+            </summary>
+            <param name="progress">The FFmpeg progress instance.</param>
+            <param name="includeBitrate">Whether to include bitrate in the output.</param>
+            <returns>A formatted progress string.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="progress"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgressExtensions.GetEstimatedTotalDuration(FFmpegFluent.FFmpegProgress)">
+            <summary>
+            Calculates the estimated total duration based on processed time and speed multiplier.
+            </summary>
+            <param name="progress">The FFmpeg progress instance.</param>
+            <returns>The estimated total duration, or null if speed is not available.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="progress"/> is null.</exception>
+        </member>
+        <member name="T:FFmpegFluent.FFmpegProgressJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization extensions for <see cref="T:FFmpegFluent.FFmpegProgress"/>.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgressJsonExtensions.ToJson(FFmpegFluent.FFmpegProgress,System.Boolean)">
+            <summary>
+            Serializes the <see cref="T:FFmpegFluent.FFmpegProgress"/> instance to a JSON string.
+            </summary>
+            <param name="value">The progress instance to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation for readability.</param>
+            <returns>A JSON string representation of the progress.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgressJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string to a <see cref="T:FFmpegFluent.FFmpegProgress"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>The deserialized progress instance, or null if the JSON is empty or whitespace.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+            <exception cref="T:System.Text.Json.JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgressJsonExtensions.TryFromJson(System.String,FFmpegFluent.FFmpegProgress@)">
+            <summary>
+            Attempts to deserialize a JSON string to a <see cref="T:FFmpegFluent.FFmpegProgress"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">The deserialized progress instance, or null if deserialization failed.</param>
+            <returns>True if deserialization succeeded; otherwise, false.</returns>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+        </member>
+        <member name="T:FFmpegFluent.FFmpegProgressValidation">
+            <summary>
+            Provides validation helpers for <see cref="T:FFmpegFluent.FFmpegProgress"/> instances.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgressValidation.Validate(FFmpegFluent.FFmpegProgress)">
+            <summary>
+            Validates the specified FFmpeg progress value.
+            </summary>
+            <param name="value">The FFmpeg progress to validate.</param>
+            <returns>A list of validation problems (empty if valid).</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgressValidation.IsValid(FFmpegFluent.FFmpegProgress)">
+            <summary>
+            Determines whether the specified FFmpeg progress value is valid.
+            </summary>
+            <param name="value">The FFmpeg progress to check.</param>
+            <returns>True if the value is valid; otherwise, false.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FFmpegProgressValidation.EnsureValid(FFmpegFluent.FFmpegProgress)">
+            <summary>
+            Ensures that the specified FFmpeg progress value is valid, throwing an exception if not.
+            </summary>
+            <param name="value">The FFmpeg progress to validate.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when the value is invalid.</exception>
+        </member>
+        <member name="T:FFmpegFluent.FilterGraph">
+            <summary>
+            Represents a filter graph builder for FFmpeg's -filter_complex option.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.FilterGraph.IsEmpty">
+            <summary>
+            Gets whether the filter graph is empty (no filters or chains defined).
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraph.AddFilter(System.String)">
+            <summary>
+            Adds a raw filter string to the graph.
+            </summary>
+            <param name="filter">The raw filter string (e.g., "scale=1280:720").</param>
+            <returns>The FilterGraph instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraph.AddFilter(System.String,System.ValueTuple{System.String,System.String}[])">
+            <summary>
+            Adds a named filter with arguments to the graph.
+            </summary>
+            <param name="name">The name of the filter (e.g., "scale", "fps").</param>
+            <param name="args">Key-value pairs representing filter arguments.</param>
+            <returns>The FilterGraph instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraph.Chain(System.String,System.String,System.String)">
+            <summary>
+            Creates a chain between an input label, filter, and output label.
+            </summary>
+            <param name="inputLabel">The label of the input stream.</param>
+            <param name="filter">The filter to apply (can be a raw filter string or filter name).</param>
+            <param name="outputLabel">The label for the output stream.</param>
+            <returns>The FilterGraph instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraph.ValidateGraph">
+            <summary>
+            Validates the filter graph structure.
+            </summary>
+            <exception cref="T:FFmpegFluent.FFmpegException">Thrown when the graph has validation errors.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraph.Build">
+            <summary>
+            Builds the complete filter_complex string.
+            </summary>
+            <returns>The complete filter_complex string.</returns>
+        </member>
+        <member name="T:FFmpegFluent.FilterGraphExtensions">
+            <summary>
+            Provides extension methods for building FFmpeg filter graphs with common video/audio processing operations.
+            Each method returns the modified <see cref="T:FFmpegFluent.FilterGraph"/> instance to allow fluent chaining.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraphExtensions.Overlay(FFmpegFluent.FilterGraph,System.String)">
+            <summary>
+            Adds an overlay filter to overlay one video stream onto another at the top-left corner (x=0, y=0).
+            </summary>
+            <param name="graph">The filter graph to extend.</param>
+            <param name="overlayFilter">The overlay filter specification (e.g., "[in1][in2]overlay=0:0").</param>
+            <returns>The filter graph with the overlay filter added.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="graph"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="overlayFilter"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraphExtensions.Scale(FFmpegFluent.FilterGraph,System.String)">
+            <summary>
+            Adds a scale filter to resize video frames to the specified dimensions.
+            </summary>
+            <param name="graph">The filter graph to extend.</param>
+            <param name="scaleFilter">The scale specification (e.g., "1280:720" or "-1:480").</param>
+            <returns>The filter graph with the scale filter added.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="graph"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="scaleFilter"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraphExtensions.Fade(FFmpegFluent.FilterGraph,System.String)">
+            <summary>
+            Adds a fade filter to apply a fade-in effect to video frames over the specified duration.
+            </summary>
+            <param name="graph">The filter graph to extend.</param>
+            <param name="fadeFilter">The fade duration specification (e.g., "t=3" for 3 seconds).</param>
+            <returns>The filter graph with the fade filter added.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="graph"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="fadeFilter"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraphExtensions.Crop(FFmpegFluent.FilterGraph,System.String)">
+            <summary>
+            Adds a crop filter to crop video frames to the specified width and height.
+            The same value is used for both width and height.
+            </summary>
+            <param name="graph">The filter graph to extend.</param>
+            <param name="cropFilter">The crop specification (e.g., "w=640:h=480" or "iw-10:ih-20").</param>
+            <returns>The filter graph with the crop filter added.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="graph"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="cropFilter"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="T:FFmpegFluent.FilterGraphJsonExtensions">
+            <summary>
+            JSON serialization helpers for <see cref="T:FFmpegFluent.FilterGraph"/>.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraphJsonExtensions.ToJson(FFmpegFluent.FilterGraph,System.Boolean)">
+            <summary>
+            Serializes the <see cref="T:FFmpegFluent.FilterGraph"/> instance to JSON.
+            </summary>
+            <param name="value">The <see cref="T:FFmpegFluent.FilterGraph"/> to serialize.</param>
+            <param name="indented">If true, the output JSON will be indented.</param>
+            <returns>A JSON string representing the <see cref="T:FFmpegFluent.FilterGraph"/>.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraphJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string into a <see cref="T:FFmpegFluent.FilterGraph"/> instance.
+            </summary>
+            <param name="json">The JSON string.</param>
+            <returns>The deserialized <see cref="T:FFmpegFluent.FilterGraph"/>, or null if the JSON represents a null value.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="json"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.FilterGraphJsonExtensions.TryFromJson(System.String,FFmpegFluent.FilterGraph@)">
+            <summary>
+            Attempts to deserialize a JSON string into a <see cref="T:FFmpegFluent.FilterGraph"/> instance.
+            </summary>
+            <param name="json">The JSON string.</param>
+            <param name="value">When this method returns, contains the deserialized <see cref="T:FFmpegFluent.FilterGraph"/> if the operation succeeded; otherwise, null.</param>
+            <returns>True if deserialization succeeded; otherwise, false.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="json"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="T:FFmpegFluent.GifPreset">
+            <summary>
+            Represents a preset for creating GIFs using FFmpeg.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.GifPreset.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FFmpegFluent.GifPreset"/> class.
+            </summary>
+            <param name="inputPath">The path to the input file.</param>
+            <param name="outputPath">The path to the output file.</param>
+        </member>
+        <member name="M:FFmpegFluent.GifPreset.WithFps(System.Int32)">
+            <summary>
+            Sets the frames per second (FPS) for the GIF.
+            </summary>
+            <param name="fps">The FPS value.</param>
+            <returns>The current instance of the <see cref="T:FFmpegFluent.GifPreset"/> class.</returns>
+        </member>
+        <member name="M:FFmpegFluent.GifPreset.WithWidth(System.Int32)">
+            <summary>
+            Sets the width of the GIF.
+            </summary>
+            <param name="width">The width value.</param>
+            <returns>The current instance of the <see cref="T:FFmpegFluent.GifPreset"/> class.</returns>
+        </member>
+        <member name="M:FFmpegFluent.GifPreset.WithRange(System.TimeSpan,System.TimeSpan)">
+            <summary>
+            Sets the time range for the GIF.
+            </summary>
+            <param name="start">The start time.</param>
+            <param name="duration">The duration.</param>
+            <returns>The current instance of the <see cref="T:FFmpegFluent.GifPreset"/> class.</returns>
+        </member>
+        <member name="M:FFmpegFluent.GifPreset.BuildArguments">
+            <summary>
+            Builds the arguments for the FFmpeg command.
+            </summary>
+            <returns>An array of arguments for the FFmpeg command.</returns>
+        </member>
+        <member name="M:FFmpegFluent.GifPreset.RunAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Runs the FFmpeg command to create the GIF.
+            </summary>
+            <param name="ffmpegPath">The path to the FFmpeg executable.</param>
+            <param name="ct">The cancellation token.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+        </member>
+        <member name="T:FFmpegFluent.GifPresetExtensions">
+            <summary>
+            Provides extension methods for configuring <see cref="T:FFmpegFluent.GifPreset"/> instances.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.GifPresetExtensions.WithDefaultSettings(FFmpegFluent.GifPreset)">
+            <summary>
+            Configures the preset with default settings suitable for most use cases.
+            </summary>
+            <param name="preset">The preset to configure.</param>
+            <returns>The configured preset.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.GifPresetExtensions.RunAndBuildArgumentsAsync(FFmpegFluent.GifPreset)">
+            <summary>
+            Runs the FFmpeg command and outputs the generated arguments to the console.
+            </summary>
+            <param name="preset">The preset to configure.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.GifPresetExtensions.WithLoopingRange(FFmpegFluent.GifPreset,System.TimeSpan,System.TimeSpan,System.Int32)">
+            <summary>
+            Applies the specified time range multiple times to create a looping effect.
+            </summary>
+            <param name="preset">The preset to configure.</param>
+            <param name="start">The start time of each range.</param>
+            <param name="duration">The duration of each range.</param>
+            <param name="loopCount">The number of times to apply the range.</param>
+            <returns>The configured preset with looping ranges applied.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.GifPresetExtensions.WithStandardDefinition(FFmpegFluent.GifPreset)">
+            <summary>
+            Configures the preset with standard definition settings (720p, 25 FPS).
+            </summary>
+            <param name="preset">The preset to configure.</param>
+            <returns>The configured preset.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="T:FFmpegFluent.GifPresetJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization extensions for <see cref="T:FFmpegFluent.GifPreset"/>.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.GifPresetJsonExtensions.ToJson(FFmpegFluent.GifPreset,System.Boolean)">
+            <summary>
+            Serializes a <see cref="T:FFmpegFluent.GifPreset"/> instance to a JSON string.
+            </summary>
+            <param name="value">The <see cref="T:FFmpegFluent.GifPreset"/> instance to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation for readability.</param>
+            <returns>A JSON string representation of the <see cref="T:FFmpegFluent.GifPreset"/>.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.GifPresetJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string to a <see cref="T:FFmpegFluent.GifPreset"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>A <see cref="T:FFmpegFluent.GifPreset"/> instance, or <see langword="null"/> if the JSON represents a null value.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="json"/> is <see langword="null"/> or empty.</exception>
+            <exception cref="T:System.Text.Json.JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
+        </member>
+        <member name="M:FFmpegFluent.GifPresetJsonExtensions.TryFromJson(System.String,FFmpegFluent.GifPreset@)">
+            <summary>
+            Attempts to deserialize a JSON string to a <see cref="T:FFmpegFluent.GifPreset"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">Receives the deserialized <see cref="T:FFmpegFluent.GifPreset"/> instance, or <see langword="null"/> if deserialization fails.</param>
+            <returns><see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.</returns>
+            <exception cref="T:System.ArgumentException"><paramref name="json"/> is <see langword="null"/> or empty.</exception>
+        </member>
+        <member name="T:FFmpegFluent.HwAccelKind">
+            <summary>
+            Types of hardware acceleration supported by the library.
+            </summary>
+        </member>
+        <member name="T:FFmpegFluent.HardwareAccelOptions">
+            <summary>
+            Options for hardware acceleration.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.HardwareAccelOptions.Kind">
+            <summary>
+            The kind of hardware acceleration to use.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.HardwareAccelOptions.Device">
+            <summary>
+            Optional device identifier (used by some accelerators such as VAAPI).
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptions.GetInputArguments">
+            <summary>
+            Returns the ffmpeg command‑line arguments required to enable the selected hardware acceleration
+            for input processing.
+            </summary>
+            <returns>An array of arguments (e.g. ["-hwaccel", "vaapi", "-hwaccel_device", "/dev/dri/renderD128"]).</returns>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptions.GetEncoderName(System.String)">
+            <summary>
+            Returns the encoder name that corresponds to the selected hardware acceleration.
+            For example, baseCodec "h264" with Nvenc becomes "h264_nvenc".
+            </summary>
+            <param name="baseCodec">The base codec name (e.g., "h264", "hevc").</param>
+            <returns>The encoder name to be used with ffmpeg.</returns>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptions.Nvenc">
+            <summary>
+            Creates a <see cref="T:FFmpegFluent.HardwareAccelOptions"/> configured for Nvidia NVENC.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptions.Vaapi(System.String)">
+            <summary>
+            Creates a <see cref="T:FFmpegFluent.HardwareAccelOptions"/> configured for VAAPI.
+            </summary>
+            <param name="device">
+            The VAAPI device path. Defaults to "/dev/dri/renderD128".
+            </param>
+        </member>
+        <member name="T:FFmpegFluent.HardwareAccelOptionsExtensions">
+            <summary>
+            Extension methods for <see cref="T:FFmpegFluent.HardwareAccelOptions"/> providing convenient operations
+            for hardware acceleration configuration and validation.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptionsExtensions.IsEnabled(FFmpegFluent.HardwareAccelOptions)">
+            <summary>
+            Determines whether the hardware acceleration is configured and enabled.
+            </summary>
+            <param name="options">The hardware acceleration options.</param>
+            <returns>True if hardware acceleration is enabled; otherwise, false.</returns>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptionsExtensions.WithDevice(FFmpegFluent.HardwareAccelOptions,System.String)">
+            <summary>
+            Creates a copy of the hardware acceleration options with the specified device.
+            </summary>
+            <param name="options">The original hardware acceleration options.</param>
+            <param name="device">The device identifier to use.</param>
+            <returns>A new <see cref="T:FFmpegFluent.HardwareAccelOptions"/> instance with the updated device.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="options"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptionsExtensions.Supports(FFmpegFluent.HardwareAccelOptions,FFmpegFluent.HwAccelKind)">
+            <summary>
+            Determines whether the specified hardware acceleration kind is supported.
+            </summary>
+            <param name="options">The hardware acceleration options.</param>
+            <param name="kind">The hardware acceleration kind to check.</param>
+            <returns>True if the kind is supported; otherwise, false.</returns>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptionsExtensions.GetDevicePath(FFmpegFluent.HardwareAccelOptions,System.String)">
+            <summary>
+            Gets the device path for the hardware acceleration, or a default value if not specified.
+            </summary>
+            <param name="options">The hardware acceleration options.</param>
+            <param name="defaultDevice">The default device path to return if none is specified. Defaults to "/dev/dri/renderD128".</param>
+            <returns>The device path, or the default if not specified.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="defaultDevice"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="T:FFmpegFluent.HardwareAccelOptionsJsonExtensions">
+            <summary>
+            Provides extension methods for serializing and deserializing <see cref="T:FFmpegFluent.HardwareAccelOptions"/> instances to and from JSON.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptionsJsonExtensions.ToJson(FFmpegFluent.HardwareAccelOptions,System.Boolean)">
+            <summary>
+            Serializes the <see cref="T:FFmpegFluent.HardwareAccelOptions"/> instance to a JSON string.
+            </summary>
+            <param name="value">The hardware acceleration options to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation for readability.</param>
+            <returns>A JSON string representing the hardware acceleration options.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptionsJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string into a <see cref="T:FFmpegFluent.HardwareAccelOptions"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>The deserialized hardware acceleration options, or <see langword="null"/> if the JSON is empty or whitespace.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.Text.Json.JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptionsJsonExtensions.TryFromJson(System.String,FFmpegFluent.HardwareAccelOptions@)">
+            <summary>
+            Attempts to deserialize a JSON string into a <see cref="T:FFmpegFluent.HardwareAccelOptions"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">Receives the deserialized hardware acceleration options if successful.</param>
+            <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="T:FFmpegFluent.HardwareAccelOptionsValidation">
+            <summary>
+            Provides validation helpers for <see cref="T:FFmpegFluent.HardwareAccelOptions"/> instances.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptionsValidation.Validate(FFmpegFluent.HardwareAccelOptions)">
+            <summary>
+            Validates the specified <see cref="T:FFmpegFluent.HardwareAccelOptions"/> instance.
+            </summary>
+            <param name="value">The options to validate.</param>
+            <returns>A list of validation problems (empty if valid).</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptionsValidation.IsValid(FFmpegFluent.HardwareAccelOptions)">
+            <summary>
+            Determines whether the specified <see cref="T:FFmpegFluent.HardwareAccelOptions"/> instance is valid.
+            </summary>
+            <param name="value">The options to check.</param>
+            <returns>True if the instance is valid; otherwise, false.</returns>
+        </member>
+        <member name="M:FFmpegFluent.HardwareAccelOptionsValidation.EnsureValid(FFmpegFluent.HardwareAccelOptions)">
+            <summary>
+            Ensures that the specified <see cref="T:FFmpegFluent.HardwareAccelOptions"/> instance is valid.
+            </summary>
+            <param name="value">The options to validate.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentException">Thrown when the instance is not valid.</exception>
+        </member>
+        <member name="T:FFmpegFluent.InputFile">
+            <summary>
+            Represents an input file for FFmpeg with fluent-style modifiers.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.InputFile.Path">
+            <summary>
+            Gets the path to the input file.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.InputFile.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FFmpegFluent.InputFile"/> class.
+            </summary>
+            <param name="path">The path to the input file.</param>
+        </member>
+        <member name="M:FFmpegFluent.InputFile.Seek(System.TimeSpan)">
+            <summary>
+            Sets the start time for the input file (-ss option).
+            </summary>
+            <param name="start">The start time.</param>
+            <returns>The current <see cref="T:FFmpegFluent.InputFile"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.InputFile.Duration(System.TimeSpan)">
+            <summary>
+            Sets the duration for the input file (-t option).
+            </summary>
+            <param name="d">The duration.</param>
+            <returns>The current <see cref="T:FFmpegFluent.InputFile"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.InputFile.Loop(System.Int32)">
+            <summary>
+            Sets the number of times the input file should be looped.
+            </summary>
+            <param name="times">The number of loops. Use 0 for infinite looping.</param>
+            <returns>The current <see cref="T:FFmpegFluent.InputFile"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.InputFile.Option(System.String,System.String)">
+            <summary>
+            Adds a custom option for the input file.
+            </summary>
+            <param name="key">The option key (e.g., "re").</param>
+            <param name="value">The optional value. If null, only the key is added.</param>
+            <returns>The current <see cref="T:FFmpegFluent.InputFile"/> instance for fluent chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.InputFile.BuildArgs">
+            <summary>
+            Builds the FFmpeg arguments for this input file.
+            </summary>
+            <returns>An enumerable of argument strings in the correct order.</returns>
+        </member>
+        <member name="T:FFmpegFluent.InputFileExtensions">
+            <summary>
+            Provides extension methods for <see cref="T:FFmpegFluent.InputFile"/> to enhance fluent API capabilities.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.InputFileExtensions.Seek(FFmpegFluent.InputFile,System.String)">
+            <summary>
+            Sets the start time for the input file using a time string format (HH:mm:ss.fff).
+            </summary>
+            <param name="inputFile">The input file instance.</param>
+            <param name="timeString">The start time as a string in format HH:mm:ss.fff.</param>
+            <returns>The input file instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="timeString"/> is null or empty.</exception>
+            <exception cref="T:System.FormatException">Thrown when <paramref name="timeString"/> has an invalid format.</exception>
+        </member>
+        <member name="M:FFmpegFluent.InputFileExtensions.Duration(FFmpegFluent.InputFile,System.String)">
+            <summary>
+            Sets the duration for the input file using a time string format (HH:mm:ss.fff).
+            </summary>
+            <param name="inputFile">The input file instance.</param>
+            <param name="timeString">The duration as a string in format HH:mm:ss.fff.</param>
+            <returns>The input file instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="timeString"/> is null or empty.</exception>
+            <exception cref="T:System.FormatException">Thrown when <paramref name="timeString"/> has an invalid format.</exception>
+        </member>
+        <member name="M:FFmpegFluent.InputFileExtensions.Options(FFmpegFluent.InputFile,System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.String}})">
+            <summary>
+            Adds multiple custom options for the input file at once.
+            </summary>
+            <param name="inputFile">The input file instance.</param>
+            <param name="options">Collection of key-value pairs representing options.</param>
+            <returns>The input file instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.InputFileExtensions.Options(FFmpegFluent.InputFile,System.ValueTuple{System.String,System.String}[])">
+            <summary>
+            Adds multiple custom options for the input file at once using string tuples.
+            </summary>
+            <param name="inputFile">The input file instance.</param>
+            <param name="options">Collection of option tuples (key, value).</param>
+            <returns>The input file instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="options"/> is null.</exception>
+        </member>
+        <member name="T:FFmpegFluent.InputFileJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization extensions for <see cref="T:FFmpegFluent.InputFile"/> instances.
+            </summary>
+        </member>
+        <member name="F:FFmpegFluent.InputFileJsonExtensions._jsonOptions">
+            <summary>
+            Gets the default JSON serializer options used for serializing and deserializing <see cref="T:FFmpegFluent.InputFile"/> instances.
+            Uses camelCase property naming policy, ignores null values, and includes a string enum converter.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.InputFileJsonExtensions.ToJson(FFmpegFluent.InputFile,System.Boolean)">
+            <summary>
+            Serializes an <see cref="T:FFmpegFluent.InputFile"/> instance to a JSON string.
+            </summary>
+            <param name="value">The input file to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation for readability.</param>
+            <returns>A JSON string representation of the input file.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.InputFileJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes an <see cref="T:FFmpegFluent.InputFile"/> instance from a JSON string.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>The deserialized <see cref="T:FFmpegFluent.InputFile"/> instance, or null if deserialization fails.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.InputFileJsonExtensions.TryFromJson(System.String,FFmpegFluent.InputFile@)">
+            <summary>
+            Attempts to deserialize an <see cref="T:FFmpegFluent.InputFile"/> instance from a JSON string.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">Receives the deserialized instance if successful.</param>
+            <returns>True if deserialization succeeded; otherwise, false.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+        </member>
+        <member name="T:FFmpegFluent.MediaInfo">
+            <summary>
+            Represents information about a media file.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.MediaInfo.Duration">
+            <summary>
+            Gets the duration of the media file.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.MediaInfo.BitRate">
+            <summary>
+            Gets the bit rate of the media file.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.MediaInfo.VideoCodec">
+            <summary>
+            Gets the video codec of the media file, or null if no video codec is present.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.MediaInfo.AudioCodec">
+            <summary>
+            Gets the audio codec of the media file, or null if no audio codec is present.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.MediaInfo.Width">
+            <summary>
+            Gets the width of the video in the media file.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.MediaInfo.Height">
+            <summary>
+            Gets the height of the video in the media file.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.MediaInfo.FrameRate">
+            <summary>
+            Gets the frame rate of the video in the media file.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.MediaInfo.AudioChannels">
+            <summary>
+            Gets the number of audio channels in the media file.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.MediaInfo.SampleRate">
+            <summary>
+            Gets the sample rate of the audio in the media file.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.MediaInfo.FormatName">
+            <summary>
+            Gets the format name of the media file.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.MediaInfo.ProbeAsync(System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Probes the media file at the specified path and returns information about it.
+            </summary>
+            <param name="filePath">The path to the media file to probe.</param>
+            <param name="ffprobePath">The path to the ffprobe executable. Defaults to "ffprobe".</param>
+            <param name="ct">A cancellation token to cancel the operation.</param>
+            <returns>A MediaInfo object containing information about the media file.</returns>
+        </member>
+        <member name="T:FFmpegFluent.MediaInfoExtensions">
+            <summary>
+            Extension methods that provide convenient helpers for <see cref="T:FFmpegFluent.MediaInfo"/>.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.MediaInfoExtensions.GetResolution(FFmpegFluent.MediaInfo)">
+            <summary>
+            Returns a string representation of the video resolution in the form "WIDTHxHEIGHT".
+            If either dimension is zero or negative, an empty string is returned.
+            </summary>
+            <param name="info">The media information to process.</param>
+            <returns>A string in the format "WIDTHxHEIGHT", or empty string if dimensions are invalid.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="info"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.MediaInfoExtensions.IsVideoOnly(FFmpegFluent.MediaInfo)">
+            <summary>
+            Determines whether the media contains only video (no audio stream).
+            </summary>
+            <param name="info">The media information to process.</param>
+            <returns><see langword="true"/> if the media contains video but no audio; otherwise, <see langword="false"/>.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="info"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.MediaInfoExtensions.AverageBitRatePerSecond(FFmpegFluent.MediaInfo)">
+            <summary>
+            Calculates the average bitrate per second (bits per second) based on the total bitrate
+            and the duration. Returns <c>0</c> if the duration is zero or negative.
+            </summary>
+            <param name="info">The media information to process.</param>
+            <returns>The average bitrate in bits per second, or 0 if duration is zero or negative.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="info"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.MediaInfoExtensions.ToSummaryString(FFmpegFluent.MediaInfo)">
+            <summary>
+            Produces a concise, human‑readable summary of the media information.
+            </summary>
+            <param name="info">The media information to process.</param>
+            <returns>A formatted string containing key media properties.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="info"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="T:FFmpegFluent.MediaInfoJsonExtensions">
+            <summary>
+            Provides extension methods for serializing and deserializing <see cref="T:FFmpegFluent.MediaInfo"/> instances to and from JSON.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.MediaInfoJsonExtensions.ToJson(FFmpegFluent.MediaInfo,System.Boolean)">
+            <summary>
+            Serializes the <see cref="T:FFmpegFluent.MediaInfo"/> instance to a JSON string.
+            </summary>
+            <param name="value">The media info instance to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation for readability.</param>
+            <returns>A JSON string representation of the media info.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.MediaInfoJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string to a <see cref="T:FFmpegFluent.MediaInfo"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>The deserialized media info instance, or null if the JSON is null or empty.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+            <exception cref="T:System.Text.Json.JsonException">Thrown when the JSON is invalid or cannot be deserialized.</exception>
+        </member>
+        <member name="M:FFmpegFluent.MediaInfoJsonExtensions.TryFromJson(System.String,FFmpegFluent.MediaInfo@)">
+            <summary>
+            Attempts to deserialize a JSON string to a <see cref="T:FFmpegFluent.MediaInfo"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">Receives the deserialized media info instance if successful.</param>
+            <returns>True if deserialization succeeded; otherwise, false.</returns>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="json"/> is null or empty.</exception>
+        </member>
+        <member name="T:FFmpegFluent.NormalizeAudioPreset">
+            <summary>
+            Audio normalization preset using FFmpeg's loudnorm filter.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.NormalizeAudioPreset.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FFmpegFluent.NormalizeAudioPreset"/> class.
+            </summary>
+            <param name="inputPath">The path to the input file.</param>
+            <param name="outputPath">The path to the output file.</param>
+        </member>
+        <member name="M:FFmpegFluent.NormalizeAudioPreset.WithTargetIntegrated(System.Double)">
+            <summary>
+            Sets the target integrated loudness in LUFS.
+            </summary>
+            <param name="lufs">The target integrated loudness in LUFS (default: -23.0).</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.NormalizeAudioPreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.NormalizeAudioPreset.WithTargetTruePeak(System.Double)">
+            <summary>
+            Sets the target true peak in dBTP.
+            </summary>
+            <param name="dbTp">The target true peak in dBTP (default: -1.5).</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.NormalizeAudioPreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.NormalizeAudioPreset.WithTargetLra(System.Double)">
+            <summary>
+            Sets the target loudness range in LU.
+            </summary>
+            <param name="lra">The target loudness range in LU (default: 7.0).</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.NormalizeAudioPreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.NormalizeAudioPreset.WithNormalize(System.Boolean)">
+            <summary>
+            Sets whether to normalize to the specified targets.
+            </summary>
+            <param name="normalize">Whether to normalize (default: true).</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.NormalizeAudioPreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.NormalizeAudioPreset.WithPrintMetadata(System.Boolean)">
+            <summary>
+            Sets whether to print metadata only and exit.
+            </summary>
+            <param name="printMetadata">Whether to print metadata only (default: false).</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.NormalizeAudioPreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.NormalizeAudioPreset.WithMeasurementInput(System.String)">
+            <summary>
+            Sets the optional measurement input file for loudnorm filter.
+            </summary>
+            <param name="measurementInput">The measurement input file path.</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.NormalizeAudioPreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.NormalizeAudioPreset.BuildArguments">
+            <summary>
+            Builds the arguments for the FFmpeg command.
+            </summary>
+            <returns>An array of arguments for the FFmpeg command.</returns>
+        </member>
+        <member name="M:FFmpegFluent.NormalizeAudioPreset.RunAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Runs the FFmpeg command to normalize the audio.
+            </summary>
+            <param name="ffmpegPath">The path to the FFmpeg executable.</param>
+            <param name="ct">The cancellation token.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+        </member>
+        <member name="T:FFmpegFluent.OutputFile">
+            <summary>
+            Represents an output file for an FFmpeg command, including its path and associated video and audio options.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.OutputFile.Path">
+            <summary>
+            Gets the path of the output file.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.OutputFile.Video">
+            <summary>
+            Gets or sets the video options for the output file.
+            </summary>
+        </member>
+        <member name="P:FFmpegFluent.OutputFile.Audio">
+            <summary>
+            Gets or sets the audio options for the output file.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.OutputFile.#ctor(System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FFmpegFluent.OutputFile"/> class with the specified output path.
+            </summary>
+            <param name="path">The path to the output file.</param>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="path"/> is null or empty.</exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFile.WithVideo(System.Action{FFmpegFluent.VideoOptions})">
+            <summary>
+            Configures the video options for this output file using the provided configuration action.
+            </summary>
+            <param name="cfg">An action that configures the <see cref="T:FFmpegFluent.VideoOptions"/> instance.</param>
+            <returns>The current <see cref="T:FFmpegFluent.OutputFile"/> instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.OutputFile.WithAudio(System.Action{FFmpegFluent.AudioOptions})">
+            <summary>
+            Configures the audio options for this output file using the provided configuration action.
+            </summary>
+            <param name="cfg">An action that configures the <see cref="T:FFmpegFluent.AudioOptions"/> instance.</param>
+            <returns>The current <see cref="T:FFmpegFluent.OutputFile"/> instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.OutputFile.Format(System.String)">
+            <summary>
+            Sets the output format for the FFmpeg command.
+            </summary>
+            <param name="fmt">The format string (e.g., "mp4").</param>
+            <returns>The current <see cref="T:FFmpegFluent.OutputFile"/> instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.OutputFile.Overwrite(System.Boolean)">
+            <summary>
+            Adds an overwrite flag to the FFmpeg command.
+            </summary>
+            <param name="yes">If true, adds the "-y" flag to overwrite existing files; otherwise adds "-n".</param>
+            <returns>The current <see cref="T:FFmpegFluent.OutputFile"/> instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.OutputFile.Option(System.String,System.String)">
+            <summary>
+            Adds a generic FFmpeg option to the command.
+            </summary>
+            <param name="key">The option key (without the leading dash).</param>
+            <param name="value">An optional value for the option. If null, the option is added without a value.</param>
+            <returns>The current <see cref="T:FFmpegFluent.OutputFile"/> instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.OutputFile.WithMetadata(System.String,System.String)">
+            <summary>
+            Adds a metadata key/value pair to the FFmpeg command, escaping the value.
+            </summary>
+            <param name="key">The metadata key.</param>
+            <param name="value">The metadata value.</param>
+            <returns>The current <see cref="T:FFmpegFluent.OutputFile"/> instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.OutputFile.Metadata(System.String,System.String)">
+            <summary>
+            Adds a metadata key/value pair to the FFmpeg command.
+            </summary>
+            <param name="key">The metadata key.</param>
+            <param name="value">The metadata value.</param>
+            <returns>The current <see cref="T:FFmpegFluent.OutputFile"/> instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.OutputFile.BuildArgs">
+            <summary>
+            Builds the sequence of command line arguments for this output file, including options, video and audio arguments, and the file path.
+            </summary>
+            <returns>An <see cref="T:System.Collections.Generic.IEnumerable`1"/> containing the ordered arguments.</returns>
+        </member>
+        <member name="T:FFmpegFluent.OutputFileExtensions">
+            <summary>
+            Provides extension methods for <see cref="T:FFmpegFluent.OutputFile"/> to simplify common FFmpeg operations.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.AsMp4(FFmpegFluent.OutputFile)">
+            <summary>
+            Sets the output format to MP4 container.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.AsMkv(FFmpegFluent.OutputFile)">
+            <summary>
+            Sets the output format to MKV container.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.AsWebM(FFmpegFluent.OutputFile)">
+            <summary>
+            Sets the output format to WebM container.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.AsMov(FFmpegFluent.OutputFile)">
+            <summary>
+            Sets the output format to MOV container.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.EnsureNotNull(FFmpegFluent.OutputFile)">
+            <summary>
+            Ensures the output file instance is not null.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithH264Codec(FFmpegFluent.OutputFile)">
+            <summary>
+            Configures the video codec to H.264 (libx264).
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithH265Codec(FFmpegFluent.OutputFile)">
+            <summary>
+            Configures the video codec to H.265/HEVC (libx265).
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithVp9Codec(FFmpegFluent.OutputFile)">
+            <summary>
+            Configures the video codec to VP9.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithAacAudio(FFmpegFluent.OutputFile)">
+            <summary>
+            Configures the audio codec to AAC.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithMp3Audio(FFmpegFluent.OutputFile)">
+            <summary>
+            Configures the audio codec to MP3.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithOpusAudio(FFmpegFluent.OutputFile)">
+            <summary>
+            Configures the audio codec to Opus.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithVideoBitrate(FFmpegFluent.OutputFile,System.String)">
+            <summary>
+            Sets the video bitrate to the specified value.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <param name="bitrate">The bitrate value (e.g., "5000k" for 5000 kbps).</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+            <exception cref="T:System.ArgumentException"><paramref name="bitrate"/> is <see langword="null"/> or empty</exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithAudioBitrate(FFmpegFluent.OutputFile,System.String)">
+            <summary>
+            Sets the audio bitrate to the specified value.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <param name="bitrate">The bitrate value (e.g., "192k" for 192 kbps).</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+            <exception cref="T:System.ArgumentException"><paramref name="bitrate"/> is <see langword="null"/> or empty</exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithFrameRate(FFmpegFluent.OutputFile,System.Double)">
+            <summary>
+            Sets the frame rate to the specified value.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <param name="fps">The frames per second value (e.g., 30.0, 60.0).</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithResolution(FFmpegFluent.OutputFile,System.Int32,System.Int32)">
+            <summary>
+            Sets the resolution to the specified value.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <param name="width">The width in pixels.</param>
+            <param name="height">The height in pixels.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithTitle(FFmpegFluent.OutputFile,System.String)">
+            <summary>
+            Adds a title metadata tag to the output file.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <param name="title">The title text.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+            <exception cref="T:System.ArgumentException"><paramref name="title"/> is <see langword="null"/> or empty</exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithAuthor(FFmpegFluent.OutputFile,System.String)">
+            <summary>
+            Adds an author metadata tag to the output file.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <param name="author">The author name.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+            <exception cref="T:System.ArgumentException"><paramref name="author"/> is <see langword="null"/> or empty</exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.WithCopyright(FFmpegFluent.OutputFile,System.String)">
+            <summary>
+            Adds a copyright metadata tag to the output file.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <param name="copyright">The copyright text.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+            <exception cref="T:System.ArgumentException"><paramref name="copyright"/> is <see langword="null"/> or empty</exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.ForceOverwrite(FFmpegFluent.OutputFile)">
+            <summary>
+            Sets the output file to overwrite existing files without prompting.
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileExtensions.PreserveExisting(FFmpegFluent.OutputFile)">
+            <summary>
+            Sets the output file to not overwrite existing files (default behavior).
+            </summary>
+            <param name="outputFile">The output file instance.</param>
+            <returns>The output file instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="outputFile"/> is <see langword="null"/></exception>
+        </member>
+        <member name="T:FFmpegFluent.OutputFileJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization extensions for <see cref="T:FFmpegFluent.OutputFile"/> instances.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileJsonExtensions.ToJson(FFmpegFluent.OutputFile,System.Boolean)">
+            <summary>
+            Serializes an <see cref="T:FFmpegFluent.OutputFile"/> instance to a JSON string.
+            </summary>
+            <param name="value">The output file instance to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation for readability.</param>
+            <returns>A JSON string representation of the output file.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes an <see cref="T:FFmpegFluent.OutputFile"/> instance from a JSON string.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>The deserialized <see cref="T:FFmpegFluent.OutputFile"/> instance, or null if the JSON is invalid.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.OutputFileJsonExtensions.TryFromJson(System.String,FFmpegFluent.OutputFile@)">
+            <summary>
+            Attempts to deserialize an <see cref="T:FFmpegFluent.OutputFile"/> instance from a JSON string.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">Receives the deserialized value if successful.</param>
+            <returns>True if deserialization succeeded; otherwise false.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is null.</exception>
+        </member>
+        <member name="T:FFmpegFluent.SpeedPreset">
+            <summary>
+            Preset for changing the playback speed of a video file using FFmpeg.
+            Supports both video and audio speed adjustments with proper filtering.
+            Uses atempo filter for audio (0.5-2.0 range) and setpts filter for video.
+            For factors outside 0.5-2.0, atempo filters are chained together.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.SpeedPreset.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of <see cref="T:FFmpegFluent.SpeedPreset"/>.
+            </summary>
+            <param name="inputPath">Path to the source video.</param>
+            <param name="outputPath">Path where the speed-adjusted video will be saved.</param>
+        </member>
+        <member name="M:FFmpegFluent.SpeedPreset.WithSpeed(System.Double)">
+            <summary>
+            Sets the playback speed factor.
+            A value of 1.0 means normal speed, 2.0 means double speed, 0.5 means half speed.
+            </summary>
+            <param name="factor">The speed factor to apply (e.g., 2.0 for 2x speed).</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.SpeedPreset"/> for fluent chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.SpeedPreset.PreservePitch(System.Boolean)">
+            <summary>
+            Configures whether to preserve the original audio pitch when changing speed.
+            When true, uses the "rubberband" filter for high-quality pitch preservation.
+            When false, audio will be higher or lower in pitch with the speed change.
+            </summary>
+            <param name="preserve">Whether to preserve audio pitch (default: false).</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.SpeedPreset"/> for fluent chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.SpeedPreset.WithReencode(System.String,System.String)">
+            <summary>
+            Configures the preset to re-encode the output using the specified codecs.
+            </summary>
+            <param name="videoCodec">Video codec to use (e.g., "libx264"). Defaults to "copy" if not specified.</param>
+            <param name="audioCodec">Audio codec to use (e.g., "aac"). Defaults to "copy" if not specified.</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.SpeedPreset"/> for fluent chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.SpeedPreset.Build">
+            <summary>
+            Builds the FFmpeg command for the speed adjustment operation.
+            </summary>
+            <returns>A configured <see cref="T:FFmpegFluent.FFmpegCommand"/> instance.</returns>
+        </member>
+        <member name="M:FFmpegFluent.SpeedPreset.BuildArguments">
+            <summary>
+            Builds the argument list that will be passed to ffmpeg.
+            </summary>
+            <returns>A string array containing the FFmpeg arguments.</returns>
+        </member>
+        <member name="M:FFmpegFluent.SpeedPreset.Run(System.String)">
+            <summary>
+            Executes the speed adjustment operation using FFmpeg.
+            </summary>
+            <param name="ffmpegPath">Path to the ffmpeg executable. Defaults to "ffmpeg".</param>
+        </member>
+        <member name="M:FFmpegFluent.SpeedPreset.ToString">
+            <summary>
+            Returns a string representation of the preset configuration.
+            </summary>
+        </member>
+        <member name="T:FFmpegFluent.SubtitlePreset">
+            <summary>
+            Preset for burning subtitles into a video using FFmpeg.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.SubtitlePreset.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of <see cref="T:FFmpegFluent.SubtitlePreset"/>.
+            </summary>
+            <param name="inputPath">Path to the source video.</param>
+            <param name="outputPath">Path where the output video with subtitles will be saved.</param>
+        </member>
+        <member name="M:FFmpegFluent.SubtitlePreset.WithSubtitle(System.String)">
+            <summary>
+            Specifies the subtitle file to burn into the video.
+            </summary>
+            <param name="subtitlePath">Path to the subtitle file (e.g., .srt, .ass).</param>
+            <returns>The current instance of <see cref="T:FFmpegFluent.SubtitlePreset"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.SubtitlePreset.Build">
+            <summary>
+            Builds a <see cref="T:FFmpegFluent.FFmpegCommand"/> that performs the subtitle burn‑in.
+            </summary>
+            <returns>A configured <see cref="T:FFmpegFluent.FFmpegCommand"/> instance.</returns>
+        </member>
+        <member name="M:FFmpegFluent.SubtitlePreset.BuildArguments">
+            <summary>
+            Builds the raw argument list that will be passed to ffmpeg.
+            Mirrors the approach used in <see cref="T:FFmpegFluent.GifPreset"/>.
+            </summary>
+            <returns>An array of arguments for the ffmpeg command.</returns>
+        </member>
+        <member name="M:FFmpegFluent.SubtitlePreset.RunAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Executes the ffmpeg command to burn subtitles into the video.
+            </summary>
+            <param name="ffmpegPath">Path to the ffmpeg executable. Defaults to "ffmpeg".</param>
+            <param name="ct">Cancellation token.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+        </member>
+        <member name="M:FFmpegFluent.SubtitlePreset.EscapePath(System.String)">
+            <summary>
+            Escapes a file path for inclusion in the ffmpeg subtitles filter.
+            Single quotes are escaped with a backslash.
+            </summary>
+        </member>
+        <member name="T:FFmpegFluent.ThumbnailPreset">
+            <summary>
+            Preset for extracting a single preview frame (thumbnail) from a video file.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPreset.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of <see cref="T:FFmpegFluent.ThumbnailPreset"/>.
+            </summary>
+            <param name="inputPath">Path to the source video.</param>
+            <param name="outputPath">Path where the thumbnail image will be saved.</param>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPreset.AtTime(System.TimeSpan)">
+            <summary>
+            Sets the timestamp from which the thumbnail will be taken.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPreset.WithSize(System.Int32,System.Int32)">
+            <summary>
+            Sets the desired size of the thumbnail.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPreset.UseSmartSelect">
+            <summary>
+            Enables the ffmpeg "thumbnail" filter (smart frame selection).
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPreset.BuildArguments">
+            <summary>
+            Builds the argument list that will be passed to ffmpeg.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPreset.RunAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Executes ffmpeg with the built arguments.
+            </summary>
+            <param name="ffmpegPath">Path to the ffmpeg executable. Defaults to "ffmpeg".</param>
+            <param name="ct">Cancellation token.</param>
+        </member>
+        <member name="T:FFmpegFluent.ThumbnailPresetExtensions">
+            <summary>
+            Extension methods that add convenient shortcuts for working with <see cref="T:FFmpegFluent.ThumbnailPreset"/>.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPresetExtensions.AtMidpoint(FFmpegFluent.ThumbnailPreset,System.TimeSpan)">
+            <summary>
+            Positions the thumbnail capture at the midpoint of the supplied video duration.
+            </summary>
+            <param name="preset">The preset to configure.</param>
+            <param name="totalDuration">The total duration of the source video.</param>
+            <returns>The same <see cref="T:FFmpegFluent.ThumbnailPreset"/> instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPresetExtensions.WithSquareSize(FFmpegFluent.ThumbnailPreset,System.Int32)">
+            <summary>
+            Sets a square size for the thumbnail (width == height).
+            </summary>
+            <param name="preset">The preset to configure.</param>
+            <param name="size">The desired width and height in pixels.</param>
+            <returns>The same <see cref="T:FFmpegFluent.ThumbnailPreset"/> instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentOutOfRangeException"><paramref name="size"/> is zero or negative.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPresetExtensions.UseSmartSelectIf(FFmpegFluent.ThumbnailPreset,System.Boolean)">
+            <summary>
+            Conditionally enables smart‑select mode.
+            </summary>
+            <param name="preset">The preset to configure.</param>
+            <param name="condition">If <c>true</c>, <see cref="M:FFmpegFluent.ThumbnailPreset.UseSmartSelect"/> is applied.</param>
+            <returns>The same <see cref="T:FFmpegFluent.ThumbnailPreset"/> instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPresetExtensions.RunAndWaitAsync(FFmpegFluent.ThumbnailPreset,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Executes the preset and returns a task that completes when the ffmpeg process finishes.
+            This is a thin wrapper around <see cref="M:FFmpegFluent.ThumbnailPreset.RunAsync(System.String,System.Threading.CancellationToken)"/> that makes the call
+            slightly more expressive when used in fluent pipelines.
+            </summary>
+            <param name="preset">The preset to run.</param>
+            <param name="ffmpegPath">Path to the ffmpeg executable (defaults to "ffmpeg").</param>
+            <param name="cancellationToken">Optional cancellation token.</param>
+            <returns>A task representing the asynchronous operation.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentException"><paramref name="ffmpegPath"/> is null or whitespace.</exception>
+        </member>
+        <member name="T:FFmpegFluent.ThumbnailPresetJsonExtensions">
+            <summary>
+            JSON serialization helpers for <see cref="T:FFmpegFluent.ThumbnailPreset"/>.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPresetJsonExtensions.ToJson(FFmpegFluent.ThumbnailPreset,System.Boolean)">
+            <summary>
+            Serializes the <paramref name="value"/> to JSON.
+            </summary>
+            <param name="value">The <see cref="T:FFmpegFluent.ThumbnailPreset"/> instance to serialize.</param>
+            <param name="indented">If <c>true</c>, the output JSON will be indented.</param>
+            <returns>A JSON string representing the object.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPresetJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string into a <see cref="T:FFmpegFluent.ThumbnailPreset"/> instance.
+            </summary>
+            <param name="json">The JSON representation of a <see cref="T:FFmpegFluent.ThumbnailPreset"/>.</param>
+            <returns>The deserialized <see cref="T:FFmpegFluent.ThumbnailPreset"/>, or <c>null</c> if the JSON is <c>null</c> or empty.</returns>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="json"/> is <see langword="null"/> or empty.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPresetJsonExtensions.TryFromJson(System.String,FFmpegFluent.ThumbnailPreset@)">
+            <summary>
+            Attempts to deserialize a JSON string into a <see cref="T:FFmpegFluent.ThumbnailPreset"/> instance.
+            </summary>
+            <param name="json">The JSON representation of a <see cref="T:FFmpegFluent.ThumbnailPreset"/>.</param>
+            <param name="value">When this method returns, contains the deserialized value if the operation succeeded; otherwise <c>null</c>.</param>
+            <returns><c>true</c> if deserialization succeeds; otherwise, <c>false</c>.</returns>
+            <exception cref="T:System.ArgumentException">Thrown when <paramref name="json"/> is <see langword="null"/> or empty.</exception>
+        </member>
+        <member name="T:FFmpegFluent.ThumbnailPresetValidation">
+            <summary>
+            Provides validation methods for <see cref="T:FFmpegFluent.ThumbnailPreset"/> instances.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPresetValidation.Validate(FFmpegFluent.ThumbnailPreset)">
+            <summary>
+            Validates the <see cref="T:FFmpegFluent.ThumbnailPreset"/> by checking if <see cref="M:FFmpegFluent.ThumbnailPreset.BuildArguments"/> returns valid command-line arguments.
+            </summary>
+            <param name="value">The thumbnail preset to validate.</param>
+            <returns>A read-only list of validation error messages. Empty if valid.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPresetValidation.IsValid(FFmpegFluent.ThumbnailPreset)">
+            <summary>
+            Determines whether the specified <see cref="T:FFmpegFluent.ThumbnailPreset"/> is valid by verifying that its <see cref="M:FFmpegFluent.ThumbnailPreset.BuildArguments"/> contain no errors.
+            </summary>
+            <param name="value">The thumbnail preset to check.</param>
+            <returns><see langword="true"/> if the preset is valid; otherwise, <see langword="false"/>.</returns>
+        </member>
+        <member name="M:FFmpegFluent.ThumbnailPresetValidation.EnsureValid(FFmpegFluent.ThumbnailPreset)">
+            <summary>
+            Validates the specified <see cref="T:FFmpegFluent.ThumbnailPreset"/> and throws an <see cref="T:System.ArgumentException"/> if the preset's arguments are invalid.
+            </summary>
+            <param name="value">The thumbnail preset to validate.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown if <paramref name="value"/> is null.</exception>
+            <exception cref="T:System.ArgumentException">Thrown if the preset is invalid.</exception>
+        </member>
+        <member name="T:FFmpegFluent.TrimPreset">
+            <summary>
+            Preset for trimming a video file using FFmpeg.
+            Supports both stream copy mode (fast, no re-encoding) and re-encoding mode.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.TrimPreset.#ctor(System.String,System.String)">
+            <summary>
+            Initializes a new instance of <see cref="T:FFmpegFluent.TrimPreset"/>.
+            </summary>
+            <param name="inputPath">Path to the source video.</param>
+            <param name="outputPath">Path where the trimmed video will be saved.</param>
+        </member>
+        <member name="M:FFmpegFluent.TrimPreset.From(System.TimeSpan)">
+            <summary>
+            Sets the start time for the trim operation.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.TrimPreset.To(System.TimeSpan)">
+            <summary>
+            Sets the end time for the trim operation.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.TrimPreset.Duration(System.TimeSpan)">
+            <summary>
+            Sets the duration for the trim operation.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.TrimPreset.StreamCopy">
+            <summary>
+            Configures the preset to use stream copy mode (no re-encoding) with -c copy.
+            This is fast but requires exact keyframe alignment.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.TrimPreset.WithReencode(System.String,System.String)">
+            <summary>
+            Configures the preset to re-encode the output using the specified codecs.
+            </summary>
+            <param name="videoCodec">Video codec to use (e.g., "libx264"). Defaults to "copy" if not specified.</param>
+            <param name="audioCodec">Audio codec to use (e.g., "aac"). Defaults to "copy" if not specified.</param>
+        </member>
+        <member name="M:FFmpegFluent.TrimPreset.Build">
+            <summary>
+            Builds the FFmpeg command for the trim operation.
+            </summary>
+            <returns>A configured <see cref="T:FFmpegFluent.FFmpegCommand"/> instance.</returns>
+        </member>
+        <member name="M:FFmpegFluent.TrimPreset.BuildArguments">
+            <summary>
+            Builds the argument list that will be passed to ffmpeg.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.TrimPreset.Run(System.String)">
+            <summary>
+            Executes the trim operation using FFmpeg.
+            </summary>
+            <param name="ffmpegPath">Path to the ffmpeg executable. Defaults to "ffmpeg".</param>
+        </member>
+        <member name="T:FFmpegFluent.VideoOptions">
+            <summary>
+            Fluent builder for video output options for FFmpeg.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptions.Codec(System.String)">
+            <summary>
+            Sets the video codec (e.g., "libx264").
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptions.Bitrate(System.String)">
+            <summary>
+            Sets the video bitrate (e.g., "2M").
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptions.Crf(System.Int32)">
+            <summary>
+            Sets the Constant Rate Factor (CRF) value.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptions.Preset(System.String)">
+            <summary>
+            Sets the encoding preset (e.g., "fast", "slow").
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptions.FrameRate(System.Double)">
+            <summary>
+            Sets the output frame rate.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptions.Resolution(System.Int32,System.Int32)">
+            <summary>
+            Sets the output resolution. This will be emitted as a scale video filter.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptions.Crop(System.Int32,System.Int32,System.Int32,System.Int32)">
+            <summary>
+            Crops the video to the specified rectangle. All parameters must be non-negative.
+            This will be emitted as a crop video filter.
+            </summary>
+            <param name="width">Width of the crop rectangle (must be &gt; 0)</param>
+            <param name="height">Height of the crop rectangle (must be &gt; 0)</param>
+            <param name="x">X offset of the crop rectangle (must be &gt;= 0)</param>
+            <param name="y">Y offset of the crop rectangle (must be &gt;= 0)</param>
+            <returns>The VideoOptions instance for fluent chaining.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown if any parameter is negative.</exception>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptions.NoVideo">
+            <summary>
+            Disables video stream in the output.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptions.BuildArgs">
+            <summary>
+            Builds the list of FFmpeg command‑line arguments representing the configured options.
+            </summary>
+        </member>
+        <member name="T:FFmpegFluent.VideoOptionsExtensions">
+            <summary>
+            Extension methods that provide convenient shortcuts for configuring <see cref="T:FFmpegFluent.VideoOptions"/>.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptionsExtensions.WithCodecAndBitrate(FFmpegFluent.VideoOptions,System.String,System.String)">
+            <summary>
+            Sets both the video codec and bitrate in a single call.
+            </summary>
+            <param name="options">The <see cref="T:FFmpegFluent.VideoOptions"/> instance to configure.</param>
+            <param name="codec">The codec name (e.g., "libx264").</param>
+            <param name="bitrate">The bitrate string (e.g., "2000k").</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="codec"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="bitrate"/> is <see langword="null"/>.</exception>
+            <returns>The same <see cref="T:FFmpegFluent.VideoOptions"/> instance for further chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptionsExtensions.WithResolutionAndFrameRate(FFmpegFluent.VideoOptions,System.Int32,System.Int32,System.Double)">
+            <summary>
+            Configures the video resolution and frame rate together.
+            </summary>
+            <param name="options">The <see cref="T:FFmpegFluent.VideoOptions"/> instance to configure.</param>
+            <param name="width">Target width in pixels.</param>
+            <param name="height">Target height in pixels.</param>
+            <param name="fps">Desired frame rate.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
+            <returns>The same <see cref="T:FFmpegFluent.VideoOptions"/> instance for further chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptionsExtensions.WithHighQuality(FFmpegFluent.VideoOptions,System.Int32,System.String)">
+            <summary>
+            Applies a high‑quality preset by setting a CRF value and an encoder preset.
+            </summary>
+            <param name="options">The <see cref="T:FFmpegFluent.VideoOptions"/> instance to configure.</param>
+            <param name="crf">Constant Rate Factor (lower is higher quality). Default is 18.</param>
+            <param name="preset">Encoder preset name (e.g., "slow", "medium"). Default is "slow".</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
+            <exception cref="T:System.ArgumentNullException"><paramref name="preset"/> is <see langword="null"/>.</exception>
+            <returns>The same <see cref="T:FFmpegFluent.VideoOptions"/> instance for further chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptionsExtensions.DisableVideo(FFmpegFluent.VideoOptions)">
+            <summary>
+            Disables video output entirely.
+            </summary>
+            <param name="options">The <see cref="T:FFmpegFluent.VideoOptions"/> instance to configure.</param>
+            <exception cref="T:System.ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
+            <returns>The same <see cref="T:FFmpegFluent.VideoOptions"/> instance for further chaining.</returns>
+        </member>
+        <member name="T:FFmpegFluent.VideoOptionsJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization extensions for <see cref="T:FFmpegFluent.VideoOptions"/>.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptionsJsonExtensions.ToJson(FFmpegFluent.VideoOptions,System.Boolean)">
+            <summary>
+            Serializes the <see cref="T:FFmpegFluent.VideoOptions"/> to a JSON string.
+            </summary>
+            <param name="value">The video options to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation.</param>
+            <returns>A JSON string representation of the video options.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptionsJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string to a <see cref="T:FFmpegFluent.VideoOptions"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>A <see cref="T:FFmpegFluent.VideoOptions"/> instance, or <see langword="null"/> if deserialization fails.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="json"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.VideoOptionsJsonExtensions.TryFromJson(System.String,FFmpegFluent.VideoOptions@)">
+            <summary>
+            Attempts to deserialize a JSON string to a <see cref="T:FFmpegFluent.VideoOptions"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">Receives the deserialized value, or <see langword="null"/> if deserialization fails.</param>
+            <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="json"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="T:FFmpegFluent.WatermarkPosition">
+            <summary>
+            Defines the position where the watermark will be placed on the video.
+            </summary>
+        </member>
+        <member name="T:FFmpegFluent.WatermarkHelper">
+            <summary>
+            Helper class for adding watermarks to video files using FFmpeg.
+            Provides fluent API for configuring watermark position, opacity, scale, and executing the watermarking process.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelper.#ctor(System.String,System.String,System.String)">
+            <summary>
+            Initializes a new instance of the <see cref="T:FFmpegFluent.WatermarkHelper"/> class.
+            </summary>
+            <param name="inputPath">The path to the input video file.</param>
+            <param name="watermarkPath">The path to the watermark image file.</param>
+            <param name="outputPath">The path where the output video with watermark will be saved.</param>
+            <exception cref="T:System.ArgumentNullException">Thrown when any of the paths is null.</exception>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelper.At(FFmpegFluent.WatermarkPosition,System.Int32)">
+            <summary>
+            Sets the position and margin for the watermark.
+            </summary>
+            <param name="pos">The position where the watermark will be placed on the video.</param>
+            <param name="margin">The margin in pixels from the edge of the video. Default is 10.</param>
+            <returns>The current <see cref="T:FFmpegFluent.WatermarkHelper"/> instance for method chaining.</returns>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelper.WithOpacity(System.Double)">
+            <summary>
+            Sets the opacity of the watermark.
+            </summary>
+            <param name="opacity">The opacity value between 0 (fully transparent) and 1 (fully opaque).</param>
+            <returns>The current <see cref="T:FFmpegFluent.WatermarkHelper"/> instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when opacity is not between 0 and 1.</exception>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelper.WithScale(System.Double)">
+            <summary>
+            Sets the scale factor for the watermark.
+            </summary>
+            <param name="factor">The scaling factor for the watermark. Must be a positive value.</param>
+            <returns>The current <see cref="T:FFmpegFluent.WatermarkHelper"/> instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentOutOfRangeException">Thrown when factor is not positive.</exception>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelper.BuildFilterComplex">
+            <summary>
+            Builds the FFmpeg filter complex string for applying the watermark.
+            </summary>
+            <returns>A filter complex string that can be used with FFmpeg to overlay the watermark on the video.</returns>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelper.BuildArguments">
+            <summary>
+            Builds the complete FFmpeg command arguments array for executing the watermarking process.
+            </summary>
+            <returns>An array of strings containing all FFmpeg command arguments including input/output paths and filter configuration.</returns>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelper.RunAsync(System.String,System.Threading.CancellationToken)">
+            <summary>
+            Asynchronously executes the FFmpeg process to apply the watermark to the video.
+            </summary>
+            <param name="ffmpegPath">The path to the FFmpeg executable. Defaults to "ffmpeg".</param>
+            <param name="ct">Cancellation token for cancelling the operation.</param>
+            <returns>A Task representing the asynchronous operation.</returns>
+            <exception cref="T:System.InvalidOperationException">Thrown when the FFmpeg process exits with a non-zero exit code.</exception>
+        </member>
+        <member name="T:FFmpegFluent.WatermarkHelperExtensions">
+            <summary>
+            Provides extension methods for <see cref="T:FFmpegFluent.WatermarkHelper"/> to position watermarks at common locations with customizable margins.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelperExtensions.TopLeft(FFmpegFluent.WatermarkHelper,System.Int32)">
+            <summary>
+            Positions the watermark in the top-left corner of the video.
+            </summary>
+            <param name="helper">The watermark helper instance.</param>
+            <param name="margin">The margin in pixels from the edges of the video. Default is 10.</param>
+            <returns>The watermark helper instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="helper"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelperExtensions.TopRight(FFmpegFluent.WatermarkHelper,System.Int32)">
+            <summary>
+            Positions the watermark in the top-right corner of the video.
+            </summary>
+            <param name="helper">The watermark helper instance.</param>
+            <param name="margin">The margin in pixels from the edges of the video. Default is 10.</param>
+            <returns>The watermark helper instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="helper"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelperExtensions.BottomLeft(FFmpegFluent.WatermarkHelper,System.Int32)">
+            <summary>
+            Positions the watermark in the bottom-left corner of the video.
+            </summary>
+            <param name="helper">The watermark helper instance.</param>
+            <param name="margin">The margin in pixels from the edges of the video. Default is 10.</param>
+            <returns>The watermark helper instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="helper"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelperExtensions.BottomRight(FFmpegFluent.WatermarkHelper,System.Int32)">
+            <summary>
+            Positions the watermark in the bottom-right corner of the video.
+            </summary>
+            <param name="helper">The watermark helper instance.</param>
+            <param name="margin">The margin in pixels from the edges of the video. Default is 10.</param>
+            <returns>The watermark helper instance for method chaining.</returns>
+            <exception cref="T:System.ArgumentNullException"><paramref name="helper"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="T:FFmpegFluent.WatermarkHelperJsonExtensions">
+            <summary>
+            Provides JSON serialization and deserialization extensions for <see cref="T:FFmpegFluent.WatermarkHelper"/> instances.
+            </summary>
+        </member>
+        <member name="F:FFmpegFluent.WatermarkHelperJsonExtensions._jsonOptions">
+            <summary>
+            Gets the default JSON serializer options used for serializing and deserializing <see cref="T:FFmpegFluent.WatermarkHelper"/> instances.
+            Uses camelCase property naming policy and ignores null values.
+            </summary>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelperJsonExtensions.ToJson(FFmpegFluent.WatermarkHelper,System.Boolean)">
+            <summary>
+            Serializes the specified <see cref="T:FFmpegFluent.WatermarkHelper"/> instance to a JSON string.
+            </summary>
+            <param name="value">The watermark helper to serialize.</param>
+            <param name="indented">Whether to format the JSON with indentation for readability.</param>
+            <returns>A JSON string representation of the watermark helper.</returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="value"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelperJsonExtensions.FromJson(System.String)">
+            <summary>
+            Deserializes a JSON string to a <see cref="T:FFmpegFluent.WatermarkHelper"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <returns>
+            The deserialized <see cref="T:FFmpegFluent.WatermarkHelper"/> instance, or <see langword="null"/>
+            if deserialization fails due to invalid JSON format.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
+        </member>
+        <member name="M:FFmpegFluent.WatermarkHelperJsonExtensions.TryFromJson(System.String,FFmpegFluent.WatermarkHelper@)">
+            <summary>
+            Attempts to deserialize a JSON string to a <see cref="T:FFmpegFluent.WatermarkHelper"/> instance.
+            </summary>
+            <param name="json">The JSON string to deserialize.</param>
+            <param name="value">Receives the deserialized <see cref="T:FFmpegFluent.WatermarkHelper"/> instance if successful.</param>
+            <returns>
+            <see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.
+            </returns>
+            <exception cref="T:System.ArgumentNullException">Thrown when <paramref name="json"/> is <see langword="null"/>.</exception>
+        </member>
+    </members>
+</doc>
