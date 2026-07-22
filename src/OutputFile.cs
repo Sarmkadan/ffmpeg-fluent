@@ -88,10 +88,12 @@ public sealed class OutputFile
     /// <param name="key">The option key (without the leading dash).</param>
     /// <param name="value">An optional value for the option. If null, the option is added without a value.</param>
     /// <returns>The current <see cref="OutputFile"/> instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="key"/> is empty or whitespace.</exception>
     public OutputFile Option(string key, string? value = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);
-        _options.Add(value is null ? $"-{key}" : $"-{key} {value}");
+        _options.Add(value is null ? $"-{key}" : $"-{key} {ArgumentEscaper.EscapeArgument(value)}");
         return this;
     }
 
@@ -101,10 +103,15 @@ public sealed class OutputFile
     /// <param name="key">The metadata key.</param>
     /// <param name="value">The metadata value.</param>
     /// <returns>The current <see cref="OutputFile"/> instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="key"/> or <paramref name="value"/> is empty or whitespace.</exception>
     public OutputFile WithMetadata(string key, string value)
     {
-        var escapedValue = value.Replace("'", "'\\''");
-        _options.Add($"-metadata {key}='{escapedValue}'");
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentException.ThrowIfNullOrEmpty(value);
+
+        var escapedValue = ArgumentEscaper.EscapeArgument(value);
+        _options.Add($"-metadata {key}={escapedValue}");
         return this;
     }
 
@@ -114,9 +121,15 @@ public sealed class OutputFile
     /// <param name="key">The metadata key.</param>
     /// <param name="value">The metadata value.</param>
     /// <returns>The current <see cref="OutputFile"/> instance for method chaining.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="key"/> or <paramref name="value"/> is empty or whitespace.</exception>
     public OutputFile Metadata(string key, string value)
     {
-        _options.Add($"-metadata {key}={value}");
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        ArgumentException.ThrowIfNullOrEmpty(value);
+
+        var escapedValue = ArgumentEscaper.EscapeArgument(value);
+        _options.Add($"-metadata {key}={escapedValue}");
         return this;
     }
 
@@ -141,6 +154,6 @@ public sealed class OutputFile
             yield return audioArg;
         }
 
-        yield return $"\"{Path}\"";
+        yield return ArgumentEscaper.EscapePath(Path);
     }
 }
