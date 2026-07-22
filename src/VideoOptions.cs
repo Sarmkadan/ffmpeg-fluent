@@ -1,4 +1,5 @@
 #nullable enable
+using System;
 using System.Collections.Generic;
 using System.Globalization;
 
@@ -169,14 +170,14 @@ public VideoOptions Crop(int width, int height, int x, int y)
         {
             // Use a scale filter to set resolution.
             args.Add("-vf");
-            args.Add($"scale={_width.Value}:{_height.Value}");
+            args.Add(ArgumentEscaper.EscapeArgument($"scale={_width.Value}:{_height.Value}"));
         }
 
 	if (_cropWidth.HasValue && _cropHeight.HasValue)
 	{
 		// Use a crop filter to crop the video.
 		args.Add("-vf");
-		args.Add($"crop={_cropWidth.Value}:{_cropHeight.Value}:{_cropX.Value}:{_cropY.Value}");
+		args.Add(ArgumentEscaper.EscapeArgument($"crop={_cropWidth.Value}:{_cropHeight.Value}:{_cropX.Value}:{_cropY.Value}"));
 	}
 
         return args;

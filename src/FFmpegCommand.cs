@@ -83,9 +83,12 @@ public sealed class FFmpegCommand
     /// <param name="key">The key of the global option.</param>
     /// <param name="value">The value of the global option. Defaults to null.</param>
     /// <returns>The current instance of the <see cref="FFmpegCommand"/> class.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="key"/> is null.</exception>
+    /// <exception cref="ArgumentException"><paramref name="key"/> is empty or whitespace.</exception>
     public FFmpegCommand GlobalOption(string key, string? value = null)
     {
-        _globalOptions.Add(value is null ? $"-{key}" : $"-{key} {value}");
+        ArgumentException.ThrowIfNullOrEmpty(key);
+        _globalOptions.Add(value is null ? $"-{key}" : $"-{key} {ArgumentEscaper.EscapeArgument(value)}");
         return this;
     }
 
@@ -131,7 +134,7 @@ public sealed class FFmpegCommand
 
         if (!_filterGraph.IsEmpty)
         {
-            args.Add($"-filter_complex \"{_filterGraph.Build()}\"");
+            args.Add($"-filter_complex {ArgumentEscaper.EscapeFilterGraph(_filterGraph.Build())}");
         }
 
         foreach (var output in _outputs)
@@ -178,7 +181,7 @@ public sealed class FFmpegCommand
 
         if (!_filterGraph.IsEmpty)
         {
-            args.Add($"-filter_complex \"{_filterGraph.Build()}\"");
+            args.Add($"-filter_complex {ArgumentEscaper.EscapeFilterGraph(_filterGraph.Build())}");
         }
 
         foreach (var output in _outputs)
