@@ -15,7 +15,7 @@ namespace FFmpegFluent;
 /// </summary>
 public sealed class FFmpegCommand
 {
-    internal readonly string _ffmpegPath;
+    private readonly IFFmpegLocator _locator;
     internal readonly List<InputFile> _inputs = [];
     internal readonly List<OutputFile> _outputs = [];
     internal readonly FilterGraph _filterGraph = new();
@@ -25,18 +25,29 @@ public sealed class FFmpegCommand
     /// <summary>
     /// Initializes a new instance of the <see cref="FFmpegCommand"/> class.
     /// </summary>
-    /// <param name="ffmpegPath">The path to the FFmpeg executable.</param>
-    private FFmpegCommand(string ffmpegPath)
+    /// <param name="locator">The locator service to resolve FFmpeg executable paths.</param>
+    private FFmpegCommand(IFFmpegLocator locator)
     {
-        _ffmpegPath = ffmpegPath;
+        _locator = locator ?? throw new ArgumentNullException(nameof(locator));
     }
 
     /// <summary>
-    /// Creates a new instance of the <see cref="FFmpegCommand"/> class.
+    /// Creates a new instance of the <see cref="FFmpegCommand"/> class using the default locator.
     /// </summary>
-    /// <param name="ffmpegPath">The path to the FFmpeg executable. Defaults to "ffmpeg".</param>
     /// <returns>A new instance of the <see cref="FFmpegCommand"/> class.</returns>
-    public static FFmpegCommand Create(string ffmpegPath = "ffmpeg") => new(ffmpegPath);
+    public static FFmpegCommand Create() => new(FFmpegLocator.Instance);
+
+    /// <summary>
+    /// Creates a new instance of the <see cref="FFmpegCommand"/> class with a custom locator.
+    /// </summary>
+    /// <param name="locator">The locator service to resolve FFmpeg executable paths.</param>
+    /// <returns>A new instance of the <see cref="FFmpegCommand"/> class.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="locator"/> is <see langword="null"/>.</exception>
+    public static FFmpegCommand Create(IFFmpegLocator locator)
+    {
+        ArgumentNullException.ThrowIfNull(locator);
+        return new FFmpegCommand(locator);
+    }
 
     /// <summary>
     /// Adds an input file to the command.
@@ -248,7 +259,7 @@ public sealed class FFmpegCommand
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> is negative.</exception>
     public async Task<int> RunAsync(IProgress<FFmpegProgress>? progress, Action<FFmpegProgress>? progressAction, TimeSpan? timeout, CancellationToken ct = default)
     {
-        ArgumentNullException.ThrowIfNull(_ffmpegPath);
+        ArgumentNullException.ThrowIfNull(_locator);
 
         if (timeout.HasValue && timeout.Value < TimeSpan.Zero)
         {
@@ -259,7 +270,7 @@ public sealed class FFmpegCommand
         {
             StartInfo =
             {
-                FileName = _ffmpegPath,
+                FileName = _locator.FFmpegPath,
                 Arguments = BuildCommandLine(),
                 RedirectStandardError = true,
                 RedirectStandardInput = true,
