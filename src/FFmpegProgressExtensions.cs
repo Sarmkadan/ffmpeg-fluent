@@ -86,4 +86,46 @@ public static class FFmpegProgressExtensions
 
         return TimeSpan.FromSeconds(estimatedTotalSeconds);
     }
+
+    /// <summary>
+    /// Gets the percentage complete (0-100), or null if not available.
+    /// </summary>
+    /// <param name="progress">The FFmpeg progress instance.</param>
+    /// <returns>The percentage complete, or null if not available.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="progress"/> is null.</exception>
+    public static double? GetPercent(this FFmpegProgress progress)
+    {
+        ArgumentNullException.ThrowIfNull(progress);
+        return progress.Percent;
+    }
+
+    /// <summary>
+    /// Calculates the estimated remaining percentage based on processed time and estimated total duration.
+    /// </summary>
+    /// <param name="progress">The FFmpeg progress instance.</param>
+    /// <returns>The estimated remaining percentage (0-100), or null if total duration is unknown.</returns>
+    /// <exception cref="ArgumentNullException"><paramref name="progress"/> is null.</exception>
+    public static double? GetRemainingPercent(this FFmpegProgress progress)
+    {
+        ArgumentNullException.ThrowIfNull(progress);
+
+        if (progress.Percent.HasValue)
+        {
+            return 100 - progress.Percent.Value;
+        }
+
+        if (progress.ProcessedTime == default || progress.ProcessedTime <= TimeSpan.Zero)
+        {
+            return null;
+        }
+
+        var estimatedTotal = progress.GetEstimatedTotalDuration();
+        if (estimatedTotal.HasValue && estimatedTotal.Value > TimeSpan.Zero)
+        {
+            var remainingPercent = 100 * (1 - (progress.ProcessedTime.TotalSeconds / estimatedTotal.Value.TotalSeconds));
+            return remainingPercent > 0 ? remainingPercent : 0;
+        }
+
+        return null;
+    }
 }
