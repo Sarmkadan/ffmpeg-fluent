@@ -1,3 +1,4 @@
+#nullable enable
 using System;
 using System.Collections.Generic;
 
@@ -71,6 +72,38 @@ namespace FFmpegFluent
             ArgumentNullException.ThrowIfNull(options);
 
             return options.NoVideo();
+        }
+
+        /// <summary>
+        /// Sets the video codec to libx264 with a default bitrate.
+        /// </summary>
+        /// <param name="options">The <see cref="VideoOptions"/> instance to configure.</param>
+        /// <param name="bitrate">The bitrate string (e.g., "2M").</param>
+        /// <exception cref="ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="bitrate"/> is <see langword="null"/>.</exception>
+        /// <returns>The same <see cref="VideoOptions"/> instance for further chaining.</returns>
+        public static VideoOptions WithLibx264(this VideoOptions options, string bitrate = "2M")
+        {
+            ArgumentNullException.ThrowIfNull(options);
+            ArgumentNullException.ThrowIfNull(bitrate);
+
+            return options.Codec("libx264").Bitrate(bitrate);
+        }
+
+        /// <summary>
+        /// Sets the video codec to libx265 with a default bitrate.
+        /// </summary>
+        /// <param name="options">The <see cref="VideoOptions"/> instance to configure.</param>
+        /// <param name="bitrate">The bitrate string (e.g., "2M").</param>
+        /// <exception cref="ArgumentNullException"><paramref name="options"/> is <see langword="null"/>.</exception>
+        /// <exception cref="ArgumentNullException"><paramref name="bitrate"/> is <see langword="null"/>.</exception>
+        /// <returns>The same <see cref="VideoOptions"/> instance for further chaining.</returns>
+        public static VideoOptions WithLibx265(this VideoOptions options, string bitrate = "2M")
+        {
+            ArgumentNullException.ThrowIfNull(options);
+            ArgumentNullException.ThrowIfNull(bitrate);
+
+            return options.Codec("libx265").Bitrate(bitrate);
         }
     }
 }

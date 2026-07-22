@@ -22,7 +22,7 @@ public static class VideoOptionsJsonExtensions
     /// Serializes the <see cref="VideoOptions"/> to a JSON string.
     /// </summary>
     /// <param name="value">The video options to serialize.</param>
-    /// <param name="indented">Whether to format the JSON with indentation.</param>
+    /// <param name="indented">Whether to format the JSON with indentation for readability.</param>
     /// <returns>A JSON string representation of the video options.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="value"/> is <see langword="null"/>.</exception>
     public static string ToJson(this VideoOptions value, bool indented = false)
@@ -59,8 +59,8 @@ public static class VideoOptionsJsonExtensions
     /// Attempts to deserialize a JSON string to a <see cref="VideoOptions"/> instance.
     /// </summary>
     /// <param name="json">The JSON string to deserialize.</param>
-    /// <param name="value">Receives the deserialized value, or <see langword="null"/> if deserialization fails.</param>
-    /// <returns><see langword="true"/> if deserialization succeeded; otherwise, <see langword="false"/>.</returns>
+    /// <param name="value">Receives the deserialized <see cref="VideoOptions"/> instance if successful.</param>
+    /// <returns><see langword="true"/> if deserialization succeeds; otherwise, <see langword="false"/>.</returns>
     /// <exception cref="ArgumentNullException"><paramref name="json"/> is <see langword="null"/>.</exception>
     public static bool TryFromJson(string json, out VideoOptions? value)
     {
