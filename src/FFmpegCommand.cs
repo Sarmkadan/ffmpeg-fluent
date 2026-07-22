@@ -4,6 +4,7 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Runtime.InteropServices;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -197,6 +198,60 @@ public sealed class FFmpegCommand
     /// <returns>The exit code of the command.</returns>
     public async Task<int> RunAsync(IProgress<FFmpegProgress>? progress = null, Action<FFmpegProgress>? progressAction = null, CancellationToken ct = default)
     {
+        await RunAsync(progress, progressAction, timeout: null, ct).ConfigureAwait(false);
+        return 0;
+    }
+
+    /// <summary>
+    /// Runs the command asynchronously with a timeout.
+    /// </summary>
+    /// <param name="timeout">The maximum duration to allow for the command to complete. If null, no timeout is enforced.</param>
+    /// <param name="ct">An optional cancellation token.</param>
+    /// <returns>The exit code of the command.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> is negative.</exception>
+    public Task<int> RunAsync(TimeSpan timeout, CancellationToken ct = default)
+    {
+        if (timeout < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout), "Timeout must be non-negative.");
+        }
+        return RunAsync(null, null, timeout, ct);
+    }
+
+    /// <summary>
+    /// Runs the command asynchronously with a timeout.
+    /// </summary>
+    /// <param name="timeout">The maximum duration to allow for the command to complete. If null, no timeout is enforced.</param>
+    /// <param name="ct">An optional cancellation token.</param>
+    /// <returns>The exit code of the command.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> is negative.</exception>
+    public Task<int> RunAsync(TimeSpan? timeout, CancellationToken ct = default)
+    {
+        if (timeout.HasValue && timeout.Value < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout), "Timeout must be non-negative.");
+        }
+        return RunAsync(null, null, timeout, ct);
+    }
+
+    /// <summary>
+    /// Runs the command asynchronously with progress reporting and optional timeout.
+    /// </summary>
+    /// <param name="progress">An optional progress reporter.</param>
+    /// <param name="progressAction">An optional progress callback action.</param>
+    /// <param name="timeout">The maximum duration to allow for the command to complete. If null, no timeout is enforced.</param>
+    /// <param name="ct">An optional cancellation token.</param>
+    /// <returns>The exit code of the command.</returns>
+    /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> is negative.</exception>
+    public async Task<int> RunAsync(IProgress<FFmpegProgress>? progress, Action<FFmpegProgress>? progressAction, TimeSpan? timeout, CancellationToken ct = default)
+    {
+        ArgumentNullException.ThrowIfNull(_ffmpegPath);
+
+        if (timeout.HasValue && timeout.Value < TimeSpan.Zero)
+        {
+            throw new ArgumentOutOfRangeException(nameof(timeout), "Timeout must be non-negative.");
+        }
+
         using var process = new Process
         {
             StartInfo =
@@ -204,6 +259,7 @@ public sealed class FFmpegCommand
                 FileName = _ffmpegPath,
                 Arguments = BuildCommandLine(),
                 RedirectStandardError = true,
+                RedirectStandardInput = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
             }
@@ -211,6 +267,7 @@ public sealed class FFmpegCommand
 
         process.Start();
 
+        // Start stderr reader
         var stderrLines = new Queue<string>();
         var stderrReadTask = Task.Run(async () =>
         {
@@ -218,19 +275,19 @@ public sealed class FFmpegCommand
             {
                 while (!process.StandardError.EndOfStream)
                 {
-                    var line = await process.StandardError.ReadLineAsync(ct);
+                    var line = await process.StandardError.ReadLineAsync(ct).ConfigureAwait(false);
                     if (line is null)
                     {
                         continue;
                     }
 
                     stderrLines.Enqueue(line);
-                    if (progress != null && FFmpegProgress.TryParse(line, out var ffmpegProgress))
+                    if (progress != null && FFmpegProgress.TryParse(line, out var ffmpegProgress) && ffmpegProgress != null)
                     {
                         progress.Report(ffmpegProgress);
                     }
 
-                    if (progressAction != null && FFmpegProgress.TryParse(line, out var ffmpegProgress2))
+                    if (progressAction != null && FFmpegProgress.TryParse(line, out var ffmpegProgress2) && ffmpegProgress2 != null)
                     {
                         progressAction(ffmpegProgress2);
                     }
@@ -242,11 +299,105 @@ public sealed class FFmpegCommand
             }
         }, ct);
 
+        // Handle timeout and cancellation
+        Task<int> executionTask;
+        if (timeout.HasValue)
+        {
+            executionTask = ExecuteWithTimeoutAsync(process, timeout.Value, ct, stderrLines, stderrReadTask);
+        }
+        else
+        {
+            executionTask = ExecuteWithoutTimeoutAsync(process, ct, stderrLines, stderrReadTask);
+        }
+
+        return await executionTask.ConfigureAwait(false);
+    }
+
+    private async Task<int> ExecuteWithoutTimeoutAsync(Process process, CancellationToken ct, Queue<string> stderrLines, Task stderrReadTask)
+    {
         await Task.WhenAll(
             process.WaitForExitAsync(ct),
             stderrReadTask
         ).ConfigureAwait(false);
 
+        return await GetResultAsync(process, stderrLines).ConfigureAwait(false);
+    }
+
+    private async Task<int> ExecuteWithTimeoutAsync(Process process, TimeSpan timeout, CancellationToken ct, Queue<string> stderrLines, Task stderrReadTask)
+    {
+        using var timeoutCts = CancellationTokenSource.CreateLinkedTokenSource(ct);
+        var timeoutTask = Task.Delay(timeout, timeoutCts.Token);
+        var processExitTask = process.WaitForExitAsync(ct);
+
+        var completedTask = await Task.WhenAny(
+            processExitTask,
+            timeoutTask,
+            stderrReadTask
+        ).ConfigureAwait(false);
+
+        if (completedTask == timeoutTask)
+        {
+            // Timeout occurred - need to cancel the process
+            await HandleTimeoutAsync(process, timeoutCts).ConfigureAwait(false);
+            throw new FFmpegException(BuildCommandLine(), -1, $"FFmpeg command timed out after {timeout.TotalSeconds} seconds.");
+        }
+        else if (completedTask == processExitTask)
+        {
+            // Process completed normally
+            timeoutCts.Cancel(); // Cancel the timeout task
+            await Task.WhenAll(stderrReadTask).ConfigureAwait(false);
+            return await GetResultAsync(process, stderrLines).ConfigureAwait(false);
+        }
+        else
+        {
+            // stderrReadTask completed - wait for process to exit
+            await Task.WhenAll(processExitTask, stderrReadTask).ConfigureAwait(false);
+            return await GetResultAsync(process, stderrLines).ConfigureAwait(false);
+        }
+    }
+
+    private async Task HandleTimeoutAsync(Process process, CancellationTokenSource timeoutCts)
+    {
+        try
+        {
+            // First, try graceful shutdown by sending 'q' to stdin (FFmpeg's quit command)
+            if (!process.HasExited && !RuntimeInformation.IsOSPlatform(OSPlatform.Windows))
+            {
+                // On Unix-like systems, try sending SIGTERM first
+                process.Kill(entireProcessTree: true);
+            }
+            else if (!process.HasExited)
+            {
+                // On Windows, try writing 'q' to stdin if process has stdin
+                try
+                {
+                    await process.StandardInput.WriteAsync("q");
+                    await process.StandardInput.FlushAsync();
+                    await Task.Delay(200).ConfigureAwait(false); // Give it a moment to respond
+
+                    if (!process.HasExited)
+                    {
+                        process.Kill(entireProcessTree: true);
+                    }
+                }
+                catch
+                {
+                    // If stdin write fails, kill the process
+                    if (!process.HasExited)
+                    {
+                        process.Kill(entireProcessTree: true);
+                    }
+                }
+            }
+        }
+        finally
+        {
+            timeoutCts.Cancel();
+        }
+    }
+
+    private async Task<int> GetResultAsync(Process process, Queue<string> stderrLines)
+    {
         if (process.ExitCode != 0)
         {
             var errorMessage = string.Join(Environment.NewLine, stderrLines);
