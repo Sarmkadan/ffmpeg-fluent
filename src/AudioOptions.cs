@@ -10,12 +10,12 @@ namespace FFmpegFluent
     /// </summary>
     public sealed class AudioOptions
     {
-        private string? _codec;
-        private string? _bitrate;
-        private int? _sampleRate;
-        private int? _channels;
-        private double? _volume;
-        private bool _noAudio;
+        internal string? _codec;
+        internal string? _bitrate;
+        internal int? _sampleRate;
+        internal int? _channels;
+        internal double? _volume;
+        internal bool _noAudio;
 
         /// <summary>
         /// Sets the audio codec.
