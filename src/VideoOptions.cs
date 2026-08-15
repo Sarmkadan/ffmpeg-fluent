@@ -10,18 +10,18 @@ namespace FFmpegFluent;
 /// </summary>
 public sealed class VideoOptions
 {
-    private string? _codec;
-    private string? _bitrate;
-    private int? _crf;
-    private string? _preset;
-    private double? _frameRate;
-    private int? _width;
-    private int? _height;
-    private int? _cropX;
-    private int? _cropY;
-    private int? _cropWidth;
-    private int? _cropHeight;
-    private bool _noVideo;
+    internal string? _codec;
+    internal string? _bitrate;
+    internal int? _crf;
+    internal string? _preset;
+    internal double? _frameRate;
+    internal int? _width;
+    internal int? _height;
+    internal int? _cropX;
+    internal int? _cropY;
+    internal int? _cropWidth;
+    internal int? _cropHeight;
+    internal bool _noVideo;
 
     /// <summary>
     /// Sets the video codec (e.g., "libx264").

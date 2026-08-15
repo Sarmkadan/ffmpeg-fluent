@@ -212,6 +212,7 @@ public sealed class FFmpegCommand
     /// <returns>The exit code of the command.</returns>
     public async Task<int> RunAsync(IProgress<FFmpegProgress>? progress = null, Action<FFmpegProgress>? progressAction = null, CancellationToken ct = default)
     {
+        this.EnsureValid();
         await RunAsync(progress, progressAction, timeout: null, ct).ConfigureAwait(false);
         return 0;
     }
@@ -225,6 +226,7 @@ public sealed class FFmpegCommand
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> is negative.</exception>
     public Task<int> RunAsync(TimeSpan timeout, CancellationToken ct = default)
     {
+        this.EnsureValid();
         if (timeout < TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(nameof(timeout), "Timeout must be non-negative.");
@@ -241,6 +243,7 @@ public sealed class FFmpegCommand
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> is negative.</exception>
     public Task<int> RunAsync(TimeSpan? timeout, CancellationToken ct = default)
     {
+        this.EnsureValid();
         if (timeout.HasValue && timeout.Value < TimeSpan.Zero)
         {
             throw new ArgumentOutOfRangeException(nameof(timeout), "Timeout must be non-negative.");
