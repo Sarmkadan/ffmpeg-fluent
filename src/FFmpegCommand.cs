@@ -184,7 +184,8 @@ public sealed class FFmpegCommand
     /// Builds the command line arguments for the command.
     /// </summary>
     /// <returns>The command line arguments as a string.</returns>
-    public string BuildCommandLine()
+    public string PreviewArguments() => BuildCommandLine();
+        public string BuildCommandLine()
     {
         var args = new List<string>(_globalOptions);
 
