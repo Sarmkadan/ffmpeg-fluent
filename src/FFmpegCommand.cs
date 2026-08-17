@@ -57,6 +57,7 @@ public sealed class FFmpegCommand
     /// <returns>The current instance of the <see cref="FFmpegCommand"/> class.</returns>
     public FFmpegCommand AddInput(string path, Action<InputFile>? cfg = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(path);
         var inputFile = new InputFile(path);
         cfg?.Invoke(inputFile);
         _inputs.Add(inputFile);
@@ -70,6 +71,7 @@ public sealed class FFmpegCommand
     /// <returns>The current instance of the <see cref="FFmpegCommand"/> class.</returns>
     public FFmpegCommand WithFilterGraph(Action<FilterGraph> cfg)
     {
+        ArgumentNullException.ThrowIfNull(cfg);
         cfg(_filterGraph);
         return this;
     }
@@ -82,6 +84,7 @@ public sealed class FFmpegCommand
     /// <returns>The current instance of the <see cref="FFmpegCommand"/> class.</returns>
     public FFmpegCommand AddOutput(string path, Action<OutputFile>? cfg = null)
     {
+        ArgumentException.ThrowIfNullOrEmpty(path);
         var outputFile = new OutputFile(path);
         cfg?.Invoke(outputFile);
         _outputs.Add(outputFile);
