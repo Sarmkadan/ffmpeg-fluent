@@ -70,5 +70,57 @@ namespace FFmpegFluent
                 $"Bitrate: {info.BitRate} bps, " +
                 $"FPS: {info.FrameRate:F2}";
         }
+
+        /// <summary>
+        /// Determines whether the media contains an audio stream.
+        /// </summary>
+        /// <param name="info">The media information to process.</param>
+        /// <returns><see langword="true"/> if the media contains an audio stream; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="info"/> is <see langword="null"/>.</exception>
+        public static bool HasAudio(this MediaInfo info)
+        {
+            ArgumentNullException.ThrowIfNull(info);
+
+            return !string.IsNullOrWhiteSpace(info.AudioCodec);
+        }
+
+        /// <summary>
+        /// Determines whether the media contains a video stream.
+        /// </summary>
+        /// <param name="info">The media information to process.</param>
+        /// <returns><see langword="true"/> if the media contains a video stream; otherwise, <see langword="false"/>.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="info"/> is <see langword="null"/>.</exception>
+        public static bool HasVideo(this MediaInfo info)
+        {
+            ArgumentNullException.ThrowIfNull(info);
+
+            return !string.IsNullOrWhiteSpace(info.VideoCodec);
+        }
+
+        /// <summary>
+        /// Returns the resolution of the media as a <see cref="System.Drawing.Size"/>-style tuple.
+        /// </summary>
+        /// <param name="info">The media information to process.</param>
+        /// <returns>A tuple containing the width and height of the video.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="info"/> is <see langword="null"/>.</exception>
+        public static (int Width, int Height) Resolution(this MediaInfo info)
+        {
+            ArgumentNullException.ThrowIfNull(info);
+
+            return (info.Width, info.Height);
+        }
+
+        /// <summary>
+        /// Calculates the total bitrate of the media in megabits per second.
+        /// </summary>
+        /// <param name="info">The media information to process.</param>
+        /// <returns>The bitrate in megabits per second.</returns>
+        /// <exception cref="ArgumentNullException"><paramref name="info"/> is <see langword="null"/>.</exception>
+        public static double BitrateMbps(this MediaInfo info)
+        {
+            ArgumentNullException.ThrowIfNull(info);
+
+            return info.BitRate / 1_000_000.0;
+        }
     }
 }
