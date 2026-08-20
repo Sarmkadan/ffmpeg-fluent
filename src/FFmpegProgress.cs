@@ -50,8 +50,9 @@ public sealed class FFmpegProgress
     /// <param name="progress">The parsed progress, or null if the line is empty/whitespace.</param>
     /// <param name="rawLine">Optional. If provided, receives the raw input line for fallback observation.</param>
     /// <returns>True if parsing succeeded and at least one field was populated; otherwise, false.</returns>
-    public static bool TryParse(string ffmpegStdErrLine, out FFmpegProgress? progress, out string? rawLine)
+    public static bool TryParse(string? ffmpegStdErrLine, out FFmpegProgress? progress, out string? rawLine)
     {
+        ArgumentException.ThrowIfNullOrEmpty(ffmpegStdErrLine);
         rawLine = null;
         progress = null;
 

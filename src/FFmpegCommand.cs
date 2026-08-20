@@ -55,7 +55,7 @@ public sealed class FFmpegCommand
     /// <param name="path">The path to the input file.</param>
     /// <param name="cfg">An optional configuration action for the input file.</param>
     /// <returns>The current instance of the <see cref="FFmpegCommand"/> class.</returns>
-    public FFmpegCommand AddInput(string path, Action<InputFile>? cfg = null)
+    public FFmpegCommand AddInput(string? path, Action<InputFile>? cfg = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(path);
         var inputFile = new InputFile(path);
