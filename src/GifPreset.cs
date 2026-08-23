@@ -7,7 +7,10 @@ namespace FFmpegFluent;
 /// <summary>
 /// Represents a preset for creating GIFs using FFmpeg.
 /// </summary>
-public sealed class GifPreset
+/// <summary>
+        /// Represents a preset for creating GIFs using FFmpeg.
+        /// </summary>
+        public sealed class GifPreset
 {
     private readonly string _inputPath;
     private readonly string _outputPath;

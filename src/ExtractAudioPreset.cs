@@ -3,7 +3,10 @@ namespace FFmpegFluent;
 /// <summary>
 /// Represents a preset for extracting audio from a video file using FFmpeg.
 /// </summary>
-public sealed class ExtractAudioPreset
+/// <summary>
+        /// Represents a preset for extracting audio from a video file using FFmpeg.
+        /// </summary>
+        public sealed class ExtractAudioPreset
 {
     private readonly string _inputPath;
     private readonly string _outputPath;
