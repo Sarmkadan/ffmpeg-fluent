@@ -11,7 +11,10 @@ namespace FFmpegFluent
     /// <summary>
     /// Preset for concatenating multiple media files using FFmpeg's concat demuxer.
     /// </summary>
-    public sealed class ConcatPreset
+    /// <summary>
+        /// Preset for concatenating multiple media files using FFmpeg's concat demuxer.
+        /// </summary>
+        public sealed class ConcatPreset
     {
         private readonly string _outputPath;
         private readonly List<string> _inputs = new();
