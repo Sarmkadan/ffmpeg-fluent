@@ -11,8 +11,37 @@ using System.Threading.Tasks;
 namespace FFmpegFluent;
 
 /// <summary>
-/// Represents a command to be executed with FFmpeg.
+/// Represents a command to be executed with FFmpeg. This class provides a fluent API to build and execute FFmpeg commands.
 /// </summary>
+/// <example>
+///
+/// // Basic usage: convert input.mp4 to output.avi
+/// var command = FFmpegCommand.Create()
+///     .AddInput("input.mp4")
+///     .AddOutput("output.avi");
+///
+/// // Two-pass encoding example
+/// var logPath = Path.GetTempFileName();
+/// var result = FFmpegCommand.Create()
+///     .WithTwoPass(logPath)
+///     .AddInput("input.mp4")
+///     .AddOutput("output.h264", output =>
+///     {
+///         output.VideoCodec("libx264");
+///         output.AudioCodec("aac");
+///     })
+///     .RunAsync();
+///
+/// // Filter graph example
+/// var command = FFmpegCommand.Create()
+///     .AddInput("input.mp4")
+///     .WithFilterGraph(graph =>
+///     {
+///         graph.VideoFilter("scale=1280:720");
+///         graph.AudioFilter("volume=2.0");
+///     })
+///     .AddOutput("output.mp4");
+/// </example>
 public sealed class FFmpegCommand
 {
     private readonly IFFmpegLocator _locator;
