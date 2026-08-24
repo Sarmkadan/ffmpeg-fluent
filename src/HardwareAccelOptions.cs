@@ -96,5 +96,7 @@ namespace FFmpegFluent
                 Device = device
             };
         }
+
+        public override string ToString() => $"HardwareAccelOptions {{ Kind = {Kind}, Device = {Device?.ToString() ?? "null"} }}";
     }
 }
