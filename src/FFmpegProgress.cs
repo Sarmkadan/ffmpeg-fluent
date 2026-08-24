@@ -39,6 +39,12 @@ public sealed class FFmpegProgress
     public double? Percent { get; set; }
 
     /// <summary>
+    /// Returns a string representation of the FFmpeg progress.
+    /// </summary>
+    /// <returns>A string representation of the FFmpeg progress.</returns>
+    public override string ToString() => $"FFmpegProgress {{ ProcessedTime = {ProcessedTime}, Fps = {Fps}, Bitrate = {Bitrate}, FrameCount = {FrameCount}, SpeedX = {SpeedX} }}";
+
+    /// <summary>
     /// Attempts to parse an FFmpeg progress line from stderr output.
     /// </summary>
     /// <remarks>
