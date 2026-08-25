@@ -30,3 +30,19 @@ The `ConcatPresetExtensions` type offers fluent extension methods to build a `Co
 The `OutputFileExtensions` type provides fluent extension methods to configure output file properties like container format, video/audio codecs, bitrates, frame rate, resolution, metadata, and overwrite behavior. These methods enable building an `OutputFile` configuration using a fluent API.
 
 Example usage:
+
+## SubtitlePreset
+The `SubtitlePreset` type burns a subtitle file (e.g., `.srt` or `.ass`) into a video using FFmpeg's `subtitles` video filter. It takes the input/output paths plus the subtitle file, escapes the subtitle path for safe inclusion in the filter argument, and can build an `FFmpegCommand`, produce raw ffmpeg arguments, or run the conversion directly.
+
+Example usage:
+```csharp
+var preset = new SubtitlePreset("input.mp4", "output-with-subtitles.mp4")
+    .WithSubtitle("subtitles.srt");
+
+// Burn the subtitles into the output video.
+await preset.RunAsync();
+
+// Or inspect the generated command/arguments instead of running immediately.
+FFmpegCommand command = preset.Build();
+string[] arguments = preset.BuildArguments();
+```
