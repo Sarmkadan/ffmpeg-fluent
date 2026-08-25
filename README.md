@@ -66,3 +66,22 @@ await preset.RunAsync();
 FFmpegCommand command = preset.Build();
 string[] arguments = preset.BuildArguments();
 ```
+
+## NormalizeAudioPreset
+The `NormalizeAudioPreset` type normalizes the audio loudness of a media file using FFmpeg's `loudnorm` filter. It lets you configure the target integrated loudness (LUFS), true peak (dBTP), and loudness range (LRA), optionally enable normalization and metadata printing, and supports two-pass workflows by supplying measurement data from a first pass via `WithMeasurementInput`. Like the other presets, it can produce raw ffmpeg arguments via `BuildArguments()` or run the conversion directly with `RunAsync()`, and `ToString()` returns a human-readable summary of the configured options.
+
+Example usage:
+```csharp
+var preset = new NormalizeAudioPreset("input.mp4", "output-normalized.mp4")
+    .WithTargetIntegrated(-16.0)
+    .WithTargetTruePeak(-1.5)
+    .WithTargetLra(11.0)
+    .WithNormalize(true)
+    .WithPrintMetadata(true);
+
+// Inspect the generated ffmpeg arguments instead of running immediately.
+string[] arguments = preset.BuildArguments();
+
+// Run the loudness normalization.
+await preset.RunAsync();
+```
