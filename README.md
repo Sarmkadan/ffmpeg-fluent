@@ -18,6 +18,26 @@ The `FFmpegProgress` type represents the progress information reported by FFmpeg
 
 Example usage:
 
+## FFmpegException
+The `FFmpegException` type represents a failure raised when an FFmpeg process exits with an error. It exposes the process exit code, the captured standard error output, and the full command line that was executed, making failed invocations easy to diagnose and log.
+
+Example usage:
+```csharp
+var preset = new SubtitlePreset("input.mp4", "output-with-subtitles.mp4")
+    .WithSubtitle("subtitles.srt");
+
+try
+{
+    await preset.RunAsync();
+}
+catch (FFmpegException ex)
+{
+    Console.WriteLine($"FFmpeg failed with exit code {ex.ExitCode}.");
+    Console.WriteLine($"Command line: {ex.CommandLine}");
+    Console.WriteLine($"Standard error:{Environment.NewLine}{ex.StdErr}");
+}
+```
+
 ## ExtractAudioPresetExtensions
 The `ExtractAudioPresetExtensions` type provides a set of convenience methods to create common audio extraction presets. These presets can be used to extract audio from a video file and save it in a specific format.
 
