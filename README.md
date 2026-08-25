@@ -85,3 +85,20 @@ string[] arguments = preset.BuildArguments();
 // Run the loudness normalization.
 await preset.RunAsync();
 ```
+
+## TrimPreset
+The `TrimPreset` type extracts a time-coded segment from a media file by seeking to a start position (`From`) and stopping at an end position (`To`) or after a fixed length (`Duration`). When the trimmed output must match the source exactly it can be re-encoded via `WithReencode`, while `StreamCopy` performs a fast lossless cut without re-encoding. Like the other presets, it can build an `FFmpegCommand` via `Build()`, produce raw ffmpeg arguments via `BuildArguments()`, or run the trim directly with `Run()`.
+
+Example usage:
+```csharp
+var preset = new TrimPreset("input.mp4", "output-trimmed.mp4")
+    .From(TimeSpan.FromSeconds(10))
+    .To(TimeSpan.FromSeconds(40))
+    .StreamCopy();
+
+// Inspect the generated ffmpeg arguments instead of running immediately.
+string[] arguments = preset.BuildArguments();
+
+// Perform the trim.
+preset.Run();
+```
