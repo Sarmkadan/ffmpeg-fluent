@@ -102,3 +102,20 @@ string[] arguments = preset.BuildArguments();
 // Perform the trim.
 preset.Run();
 ```
+
+## SpeedPreset
+The `SpeedPreset` type changes the playback speed of a video file using FFmpeg's `setpts` and `atempo` filters, with optional pitch preservation via the `rubberband` filter. It allows specifying a speed factor, choosing whether to preserve audio pitch, and configuring re-encoding codecs.
+
+Example usage:
+```csharp
+var preset = new SpeedPreset("input.mp4", "output-fast.mp4")
+    .WithSpeed(2.0)
+    .PreservePitch(true)
+    .WithReencode("libx264", "aac");
+
+// Inspect the generated ffmpeg arguments instead of running immediately.
+string[] arguments = preset.BuildArguments();
+
+// Perform the speed adjustment.
+preset.Run();
+```
