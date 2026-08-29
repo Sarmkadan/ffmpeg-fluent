@@ -23,6 +23,7 @@ namespace FFmpegFluent;
 public sealed class FFmpegLocator : IFFmpegLocator
 {
     private static readonly object _syncLock = new();
+    private static readonly TraceSource _traceSource = new("FFmpegFluent.Locator");
     private static FFmpegLocator? _defaultInstance;
 
     private readonly string? _explicitFFmpegPath;
@@ -125,27 +126,37 @@ public sealed class FFmpegLocator : IFFmpegLocator
         // 1. Try explicit path
         if (_explicitFFmpegPath is not null)
         {
+            TraceCandidate("ffmpeg", "explicit", _explicitFFmpegPath);
             if (File.Exists(_explicitFFmpegPath))
             {
+                TraceResolved("ffmpeg", _explicitFFmpegPath);
                 return _explicitFFmpegPath;
             }
+
+            TraceFallback("ffmpeg", "environment variable", _explicitFFmpegPath);
         }
 
         // 2. Try FFMPEG_PATH environment variable
         var envPath = Environment.GetEnvironmentVariable("FFMPEG_PATH");
+        TraceEnvironmentOverride("FFMPEG_PATH", envPath);
         if (envPath is not null && File.Exists(envPath))
         {
+            TraceResolved("ffmpeg", envPath);
             return envPath;
         }
+
+        TraceFallback("ffmpeg", "PATH", envPath ?? "FFMPEG_PATH=<unset>");
 
         // 3. Probe PATH
         var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ffmpeg.exe" : "ffmpeg";
         var pathResult = Which(executableName);
         if (pathResult is not null && File.Exists(pathResult))
         {
+            TraceResolved("ffmpeg", pathResult);
             return pathResult;
         }
 
+        TraceFailure("ffmpeg", _explicitFFmpegPath, envPath);
         return null;
     }
 
@@ -156,27 +167,44 @@ public sealed class FFmpegLocator : IFFmpegLocator
         {
             var ffprobeCandidate = Path.Combine(Path.GetDirectoryName(_explicitFFmpegPath) ?? string.Empty,
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ffprobe.exe" : "ffprobe");
+            TraceCandidate("ffprobe", "explicit ffmpeg directory", ffprobeCandidate);
             if (File.Exists(ffprobeCandidate))
             {
+                TraceResolved("ffprobe", ffprobeCandidate);
                 return ffprobeCandidate;
             }
+
+            TraceFallback("ffprobe", "environment variable directory", ffprobeCandidate);
         }
 
         // Try FFMPEG_PATH environment variable directory
         var envPath = Environment.GetEnvironmentVariable("FFMPEG_PATH");
+        TraceEnvironmentOverride("FFMPEG_PATH", envPath);
         if (envPath is not null)
         {
             var ffprobeCandidate = Path.Combine(Path.GetDirectoryName(envPath) ?? string.Empty,
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ffprobe.exe" : "ffprobe");
+            TraceCandidate("ffprobe", "environment variable directory", ffprobeCandidate);
             if (File.Exists(ffprobeCandidate))
             {
+                TraceResolved("ffprobe", ffprobeCandidate);
                 return ffprobeCandidate;
             }
+
+            TraceFallback("ffprobe", "PATH", ffprobeCandidate);
         }
 
         // Probe PATH
         var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ffprobe.exe" : "ffprobe";
-        return Which(executableName);
+        var pathResult = Which(executableName);
+        if (pathResult is not null)
+        {
+            TraceResolved("ffprobe", pathResult);
+            return pathResult;
+        }
+
+        TraceFailure("ffprobe", _explicitFFmpegPath, envPath);
+        return null;
     }
 
     private static string? Which(string executableName)
@@ -194,9 +222,12 @@ public sealed class FFmpegLocator : IFFmpegLocator
                     continue;
                 }
 
+                TracePathEntry(executableName, pathEntry);
+
                 foreach (var ext in extensions)
                 {
                     var fullPath = Path.Combine(pathEntry, executableName + ext.Trim());
+                    TraceCandidate(executableName, "PATH", fullPath);
                     if (File.Exists(fullPath))
                     {
                         return fullPath;
@@ -214,7 +245,9 @@ public sealed class FFmpegLocator : IFFmpegLocator
                     continue;
                 }
 
+                TracePathEntry(executableName, pathEntry);
                 var fullPath = Path.Combine(pathEntry, executableName);
+                TraceCandidate(executableName, "PATH", fullPath);
                 if (File.Exists(fullPath))
                 {
                     return fullPath;
@@ -223,6 +256,44 @@ public sealed class FFmpegLocator : IFFmpegLocator
         }
 
         return null;
+    }
+
+    private static void TraceCandidate(string executable, string source, string candidatePath)
+    {
+        var directory = Path.GetDirectoryName(candidatePath) ?? string.Empty;
+        _traceSource.TraceEvent(TraceEventType.Verbose, 0, FormattableString.Invariant(
+            $"probe=candidate executable={executable} source={source} directory='{directory}' path='{candidatePath}'"));
+    }
+
+    private static void TracePathEntry(string executable, string pathEntry)
+    {
+        _traceSource.TraceEvent(TraceEventType.Verbose, 0, FormattableString.Invariant(
+            $"probe=path-entry executable={executable} directory='{pathEntry}'"));
+    }
+
+    private static void TraceEnvironmentOverride(string variable, string? value)
+    {
+        _traceSource.TraceEvent(TraceEventType.Verbose, 0, FormattableString.Invariant(
+            $"probe=environment-variable variable={variable} value='{value ?? "<unset>"}'"));
+    }
+
+    private static void TraceResolved(string executable, string path)
+    {
+        _traceSource.TraceEvent(TraceEventType.Information, 0, FormattableString.Invariant(
+            $"resolution=resolved executable={executable} fullPath='{Path.GetFullPath(path)}'"));
+    }
+
+    private static void TraceFallback(string executable, string nextSource, string searchedLocation)
+    {
+        _traceSource.TraceEvent(TraceEventType.Warning, 0, FormattableString.Invariant(
+            $"resolution=fallback executable={executable} nextSource='{nextSource}' searchedLocations='{searchedLocation}'"));
+    }
+
+    private static void TraceFailure(string executable, string? explicitPath, string? environmentPath)
+    {
+        var path = Environment.GetEnvironmentVariable("PATH") ?? "<unset>";
+        _traceSource.TraceEvent(TraceEventType.Warning, 0, FormattableString.Invariant(
+            $"resolution=failed executable={executable} searchedLocations='explicit={explicitPath ?? "<unset>"}; FFMPEG_PATH={environmentPath ?? "<unset>"}; PATH={path}'"));
     }
 
     private static FFmpegVersion GetVersion(string executablePath)
