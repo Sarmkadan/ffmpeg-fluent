@@ -16,11 +16,22 @@ namespace FFmpegFluent
         /// </summary>
         public sealed class ConcatPreset
     {
+        private const string DefaultVideoCodec = "libx264";
+        private const string DefaultAudioCodec = "aac";
+        private const string FormatOption = "-f";
+        private const string ConcatDemuxerFormat = "concat";
+        private const string SafeOption = "-safe";
+        private const string InputOption = "-i";
+        private const string VideoCodecOption = "-c:v";
+        private const string AudioCodecOption = "-c:a";
+        private const string CodecOption = "-c";
+        private const string CopyCodec = "copy";
+
         private readonly string _outputPath;
         private readonly List<string> _inputs = new();
         private bool _reencode;
-        private string _videoCodec = "libx264";
-        private string _audioCodec = "aac";
+        private string _videoCodec = DefaultVideoCodec;
+        private string _audioCodec = DefaultAudioCodec;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConcatPreset"/> class.
@@ -52,7 +63,9 @@ namespace FFmpegFluent
         /// <param name="videoCodec">Video codec to use (default: libx264).</param>
         /// <param name="audioCodec">Audio codec to use (default: aac).</param>
         /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
-        public ConcatPreset WithReencode(string videoCodec = "libx264", string audioCodec = "aac")
+        public ConcatPreset WithReencode(
+            string videoCodec = DefaultVideoCodec,
+            string audioCodec = DefaultAudioCodec)
         {
             _reencode = true;
             _videoCodec = videoCodec ?? throw new ArgumentNullException(nameof(videoCodec));
@@ -98,15 +111,15 @@ namespace FFmpegFluent
             {
                 await File.WriteAllTextAsync(tempFile, listContent, ct).ConfigureAwait(false);
 
-                var args = $"-f concat -safe 0 -i \"{tempFile}\" ";
+                var args = $"{FormatOption} {ConcatDemuxerFormat} {SafeOption} 0 {InputOption} \"{tempFile}\" ";
 
                 if (_reencode)
                 {
-                    args += $"-c:v {_videoCodec} -c:a {_audioCodec} ";
+                    args += $"{VideoCodecOption} {_videoCodec} {AudioCodecOption} {_audioCodec} ";
                 }
                 else
                 {
-                    args += "-c copy ";
+                    args += $"{CodecOption} {CopyCodec} ";
                 }
 
                 args += $"\"{_outputPath}\"";
