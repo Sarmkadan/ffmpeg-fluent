@@ -51,19 +51,19 @@ public sealed class FFmpegProgress
     /// This method is tolerant of unparsable or absent progress output. Unknown keys are ignored,
     /// 'N/A' values are mapped to null, and percentage is reported as nullable when total duration
     /// is unknown (e.g., live inputs, pipes, or streams without duration).
+    /// Returns false if the input is null, empty, or whitespace, or if no valid progress fields were parsed.
+    /// Negative or invalid numeric values (e.g., frame=-1) are mapped to null.
     /// </remarks>
     /// <param name="ffmpegStdErrLine">The stderr line to parse.</param>
-    /// <param name="progress">The parsed progress, or null if the line is empty/whitespace.</param>
+    /// <param name="progress">The parsed progress, or null if the line is empty/whitespace or parsing failed.</param>
     /// <param name="rawLine">Optional. If provided, receives the raw input line for fallback observation.</param>
     /// <returns>True if parsing succeeded and at least one field was populated; otherwise, false.</returns>
     public static bool TryParse(string? ffmpegStdErrLine, out FFmpegProgress? progress, out string? rawLine)
     {
-        ArgumentException.ThrowIfNullOrEmpty(ffmpegStdErrLine);
-        rawLine = null;
-        progress = null;
-
         if (string.IsNullOrWhiteSpace(ffmpegStdErrLine))
         {
+            rawLine = null;
+            progress = null;
             return false;
         }
 
@@ -72,12 +72,20 @@ public sealed class FFmpegProgress
         var updated = false;
 
         // Parse frame count
-        var frameMatch = Regex.Match(ffmpegStdErrLine, @"frame=\s*(\d+)");
+        var frameMatch = Regex.Match(ffmpegStdErrLine, @"frame=\s*(-?\d+)");
         if (frameMatch.Success)
         {
             if (long.TryParse(frameMatch.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var frameValue))
             {
-                result.FrameCount = frameValue;
+                // Guard against negative values
+                if (frameValue < 0)
+                {
+                    result.FrameCount = null;
+                }
+                else
+                {
+                    result.FrameCount = frameValue;
+                }
                 updated = true;
             }
         }
@@ -101,12 +109,20 @@ public sealed class FFmpegProgress
         }
 
         // Parse fps
-        var fpsMatch = Regex.Match(ffmpegStdErrLine, @"fps=\s*([\d.]+)");
+        var fpsMatch = Regex.Match(ffmpegStdErrLine, @"fps=\s*(-?[\d.]+)");
         if (fpsMatch.Success)
         {
             if (double.TryParse(fpsMatch.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var fpsValue))
             {
-                result.Fps = fpsValue;
+                // Guard against negative, infinity, and NaN values
+                if (double.IsInfinity(fpsValue) || double.IsNaN(fpsValue) || fpsValue < 0)
+                {
+                    result.Fps = null;
+                }
+                else
+                {
+                    result.Fps = fpsValue;
+                }
                 updated = true;
             }
         }
@@ -129,12 +145,20 @@ public sealed class FFmpegProgress
         }
 
         // Parse speed
-        var speedMatch = Regex.Match(ffmpegStdErrLine, @"speed=\s*([\d.]+)x");
+        var speedMatch = Regex.Match(ffmpegStdErrLine, @"speed=\s*(-?[\d.]+)x");
         if (speedMatch.Success)
         {
             if (double.TryParse(speedMatch.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var speedValue))
             {
-                result.SpeedX = speedValue;
+                // Guard against negative, infinity, and NaN values
+                if (double.IsInfinity(speedValue) || double.IsNaN(speedValue) || speedValue < 0)
+                {
+                    result.SpeedX = null;
+                }
+                else
+                {
+                    result.SpeedX = speedValue;
+                }
                 updated = true;
             }
         }
@@ -157,12 +181,25 @@ public sealed class FFmpegProgress
         }
 
         // Parse percentage (when total duration is known)
-        var percentMatch = Regex.Match(ffmpegStdErrLine, @"L?percentage=\s*([\d.]+)");
+        var percentMatch = Regex.Match(ffmpegStdErrLine, @"L?percentage=\s*(-?[\d.]+)");
         if (percentMatch.Success)
         {
             if (double.TryParse(percentMatch.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var percentValue))
             {
-                result.Percent = percentValue;
+                // Guard against negative, infinity, and NaN values, then clamp to 0-100
+                if (double.IsInfinity(percentValue) || double.IsNaN(percentValue) || percentValue < 0)
+                {
+                    result.Percent = null;
+                }
+                else
+                {
+                    // Clamp percentage to valid range
+                    if (percentValue > 100)
+                    {
+                        percentValue = 100;
+                    }
+                    result.Percent = percentValue;
+                }
                 updated = true;
             }
         }
@@ -174,6 +211,7 @@ public sealed class FFmpegProgress
             return true;
         }
 
+        progress = null;
         return false;
     }
 
@@ -194,6 +232,7 @@ public sealed class FFmpegProgress
     /// <remarks>
     /// This method is tolerant of unparsable or absent progress output. Unknown keys are ignored,
     /// 'N/A' values are mapped to null.
+    /// Negative or invalid numeric values (e.g., frame=-1) are mapped to null.
     /// </remarks>
     /// <param name="line">The stderr line to parse.</param>
     /// <param name="current">The progress instance to update with parsed values. If null, a new instance is created.</param>
@@ -221,12 +260,20 @@ public sealed class FFmpegProgress
         var updated = false;
 
         // Parse frame count
-        var frameMatch = Regex.Match(line, @"frame=\s*(\d+)");
+        var frameMatch = Regex.Match(line, @"frame=\s*(-?\d+)");
         if (frameMatch.Success)
         {
             if (long.TryParse(frameMatch.Groups[1].Value, NumberStyles.Integer, CultureInfo.InvariantCulture, out var frameValue))
             {
-                target.FrameCount = frameValue;
+                // Guard against negative values
+                if (frameValue < 0)
+                {
+                    target.FrameCount = null;
+                }
+                else
+                {
+                    target.FrameCount = frameValue;
+                }
                 updated = true;
             }
         }
@@ -250,12 +297,20 @@ public sealed class FFmpegProgress
         }
 
         // Parse fps
-        var fpsMatch = Regex.Match(line, @"fps=\s*([\d.]+)");
+        var fpsMatch = Regex.Match(line, @"fps=\s*(-?[\d.]+)");
         if (fpsMatch.Success)
         {
             if (double.TryParse(fpsMatch.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var fpsValue))
             {
-                target.Fps = fpsValue;
+                // Guard against negative, infinity, and NaN values
+                if (double.IsInfinity(fpsValue) || double.IsNaN(fpsValue) || fpsValue < 0)
+                {
+                    target.Fps = null;
+                }
+                else
+                {
+                    target.Fps = fpsValue;
+                }
                 updated = true;
             }
         }
@@ -278,23 +333,44 @@ public sealed class FFmpegProgress
         }
 
         // Parse speed
-        var speedMatch = Regex.Match(line, @"speed=\s*([\d.]+)x");
+        var speedMatch = Regex.Match(line, @"speed=\s*(-?[\d.]+)x");
         if (speedMatch.Success)
         {
             if (double.TryParse(speedMatch.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var speedValue))
             {
-                target.SpeedX = speedValue;
+                // Guard against negative, infinity, and NaN values
+                if (double.IsInfinity(speedValue) || double.IsNaN(speedValue) || speedValue < 0)
+                {
+                    target.SpeedX = null;
+                }
+                else
+                {
+                    target.SpeedX = speedValue;
+                }
                 updated = true;
             }
         }
 
         // Parse percentage (when total duration is known)
-        var percentMatch = Regex.Match(line, @"L?percentage=\s*([\d.]+)");
+        var percentMatch = Regex.Match(line, @"L?percentage=\s*(-?[\d.]+)");
         if (percentMatch.Success)
         {
             if (double.TryParse(percentMatch.Groups[1].Value, NumberStyles.Float, CultureInfo.InvariantCulture, out var percentValue))
             {
-                target.Percent = percentValue;
+                // Guard against negative, infinity, and NaN values, then clamp to 0-100
+                if (double.IsInfinity(percentValue) || double.IsNaN(percentValue) || percentValue < 0)
+                {
+                    target.Percent = null;
+                }
+                else
+                {
+                    // Clamp percentage to valid range
+                    if (percentValue > 100)
+                    {
+                        percentValue = 100;
+                    }
+                    target.Percent = percentValue;
+                }
                 updated = true;
             }
         }
