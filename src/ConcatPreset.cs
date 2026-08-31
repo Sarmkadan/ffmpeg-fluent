@@ -11,10 +11,7 @@ namespace FFmpegFluent
     /// <summary>
     /// Preset for concatenating multiple media files using FFmpeg's concat demuxer.
     /// </summary>
-    /// <summary>
-        /// Preset for concatenating multiple media files using FFmpeg's concat demuxer.
-        /// </summary>
-        public sealed class ConcatPreset
+    public sealed class ConcatPreset
     {
         private const string DefaultVideoCodec = "libx264";
         private const string DefaultAudioCodec = "aac";
@@ -86,7 +83,7 @@ namespace FFmpegFluent
             foreach (var input in _inputs)
             {
                 // Escape single quotes for FFmpeg list syntax.
-                var escaped = input.Replace("'", "'\\''");
+                var escaped = input.Replace("'", @"'\''");
                 lines.Add($"file '{escaped}'");
             }
 
