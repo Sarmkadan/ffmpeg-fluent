@@ -38,9 +38,10 @@ public static class ArgumentEscaper
     }
 
     /// <summary>
-    /// Escapes and quotes a filter graph string for use in FFmpeg's -filter_complex argument.
-    /// Filter graphs contain special characters like colons, brackets, quotes, and backslashes
-    /// that need proper escaping for the shell and FFmpeg parser.
+    /// Escapes and double-quotes a filter graph string for use in FFmpeg's -filter_complex argument.
+    /// Backslashes are doubled, literal single quotes use FFmpeg's close-quote/escaped-quote/reopen
+    /// sequence, and colons in option values are backslash-escaped. Double quotes are escaped for
+    /// the surrounding command-line quotes.
     /// </summary>
     /// <param name="filterGraph">The filter graph string to escape.</param>
     /// <returns>The properly escaped and quoted filter graph string.</returns>
@@ -50,8 +51,7 @@ public static class ArgumentEscaper
     {
         ArgumentException.ThrowIfNullOrWhiteSpace(filterGraph);
 
-        // Filter graphs use Unix-style escaping regardless of OS
-        // We need to escape: backslashes, quotes, and handle special characters
+        // Filter graphs use FFmpeg escaping regardless of OS.
         var sb = new StringBuilder(filterGraph.Length + 10);
 
         foreach (char c in filterGraph)
@@ -59,16 +59,16 @@ public static class ArgumentEscaper
             switch (c)
             {
                 case '\\':
-                    // Escape backslashes
                     sb.Append("\\\\");
                     break;
                 case '"':
-                    // Escape quotes
                     sb.Append("\\\"");
                     break;
                 case '\'':
-                    // Escape single quotes
-                    sb.Append("\\'");
+                    sb.Append("'\\''");
+                    break;
+                case ':':
+                    sb.Append("\\:");
                     break;
                 default:
                     sb.Append(c);
@@ -167,7 +167,7 @@ public static class ArgumentEscaper
         }
 
         // Use single quotes for Unix, escape single quotes inside by closing quote, adding escaped quote, reopening
-        return $"'{path.Replace("'", "'\\\\''")}'";
+        return $"'{path.Replace("'", "'\\''")}'";
     }
 
     /// <summary>
@@ -234,6 +234,6 @@ public static class ArgumentEscaper
         }
 
         // Has single quotes, escape them
-        return $"'{value.Replace("'", "'\\\\''")}'";
+        return $"'{value.Replace("'", "'\\''")}'";
     }
 }
