@@ -3,13 +3,33 @@ using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
 namespace FFmpegFluent
 {
     /// <summary>
-    /// Preset for concatenating multiple media files using FFmpeg's concat demuxer.
+    /// Strategy for concatenating media files.
+    /// </summary>
+    public enum ConcatStrategy
+    {
+        /// <summary>
+        /// Automatically choose demuxer when inputs are compatible (same codec, resolution, etc.), otherwise use filter.
+        /// </summary>
+        Auto,
+        /// <summary>
+        /// Always use the concat demuxer (stream copy). Requires compatible inputs.
+        /// </summary>
+        DemuxerCopy,
+        /// <summary>
+        /// Always use the concat filter (re-encode). Works with incompatible inputs.
+        /// </summary>
+        FilterReencode
+    }
+
+    /// <summary>
+    /// Preset for concatenating multiple media files using FFmpeg's concat demuxer or filter.
     /// </summary>
     public sealed class ConcatPreset
     {
@@ -29,6 +49,7 @@ namespace FFmpegFluent
         private bool _reencode;
         private string _videoCodec = DefaultVideoCodec;
         private string _audioCodec = DefaultAudioCodec;
+        private ConcatStrategy strategy = ConcatStrategy.Auto;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConcatPreset"/> class.
@@ -37,6 +58,17 @@ namespace FFmpegFluent
         public ConcatPreset(string outputPath)
         {
             _outputPath = outputPath ?? throw new ArgumentNullException(nameof(outputPath));
+        }
+
+        /// <summary>
+        /// Sets the concatenation strategy.
+        /// </summary>
+        /// <param name="strategy">The concatenation strategy to use.</param>
+        /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
+        public ConcatPreset WithStrategy(ConcatStrategy strategy)
+        {
+            this.strategy = strategy;
+            return this;
         }
 
         /// <summary>
@@ -55,7 +87,7 @@ namespace FFmpegFluent
 
         /// <summary>
         /// Configures the preset to re‑encode the output using the specified codecs.
-        /// If not called, the preset will use <c>-c copy</c>.
+        /// If not called, the preset will use <c>-c copy</c> in demuxer mode.
         /// </summary>
         /// <param name="videoCodec">Video codec to use (default: libx264).</param>
         /// <param name="audioCodec">Audio codec to use (default: aac).</param>
@@ -91,6 +123,77 @@ namespace FFmpegFluent
         }
 
         /// <summary>
+        /// Checks if all inputs are compatible for concat demuxer (same codec, resolution, etc.).
+        /// </summary>
+        private async Task<bool> AreInputsCompatibleForDemuxerAsync()
+        {
+            if (_inputs.Count == 0)
+                return false;
+
+            MediaInfo? firstInfo = null;
+
+            foreach (var input in _inputs)
+            {
+                var info = await MediaInfo.ProbeAsync(input);
+                if (firstInfo == null)
+                {
+                    firstInfo = info;
+                }
+                else
+                {
+                    if (!AreCompatible(firstInfo, info))
+                        return false;
+                }
+            }
+
+            return true;
+        }
+
+        /// <summary>
+        /// Determines if two media infos are compatible for concat demuxer.
+        /// </summary>
+        private static bool AreCompatible(MediaInfo x, MediaInfo y)
+        {
+            // Video
+            if (x.VideoCodec != null)
+            {
+                if (y.VideoCodec == null)
+                    return false;
+                if (!string.Equals(x.VideoCodec, y.VideoCodec, StringComparison.OrdinalIgnoreCase))
+                    return false;
+                if (x.Width != y.Width || x.Height != y.Height)
+                    return false;
+                if (x.FrameRate != y.FrameRate)
+                    return false;
+            }
+            else
+            {
+                if (y.VideoCodec != null)
+                    return false;
+            }
+
+            // Audio
+            if (x.AudioCodec != null)
+            {
+                if (y.AudioCodec == null)
+                    return false;
+                if (!string.Equals(x.AudioCodec, y.AudioCodec, StringComparison.OrdinalIgnoreCase))
+                    return false;
+                if (x.SampleRate != y.SampleRate)
+                    return false;
+                if (x.AudioChannels != y.AudioChannels)
+                    return false;
+            }
+            else
+            {
+                if (y.AudioCodec != null)
+                    return false;
+            }
+
+            return true;
+        }
+
+        /// <summary>
         /// Executes the concatenation using FFmpeg.
         /// </summary>
         /// <param name="ffmpegPath">Path to the ffmpeg executable (default: "ffmpeg").</param>
@@ -100,26 +203,96 @@ namespace FFmpegFluent
             if (string.IsNullOrWhiteSpace(ffmpegPath))
                 throw new ArgumentException("ffmpegPath cannot be null or whitespace.", nameof(ffmpegPath));
 
-            var listContent = BuildConcatListContent();
-
-            // Create a temporary file for the concat list.
-            var tempFile = Path.GetTempFileName();
-            try
+            bool useDemuxer = false;
+            if (strategy == ConcatStrategy.DemuxerCopy)
             {
-                await File.WriteAllTextAsync(tempFile, listContent, ct).ConfigureAwait(false);
+                useDemuxer = true;
+            }
+            else if (strategy == ConcatStrategy.Auto)
+            {
+                useDemuxer = await AreInputsCompatibleForDemuxerAsync();
+            }
+            // else: FilterReencode -> useDemuxer remains false
 
-                var args = $"{FormatOption} {ConcatDemuxerFormat} {SafeOption} 0 {InputOption} \"{tempFile}\" ";
+            if (useDemuxer)
+            {
+                // Demuxer mode
+                var listContent = BuildConcatListContent();
 
-                if (_reencode)
+                var tempFile = Path.GetTempFileName();
+                try
                 {
-                    args += $"{VideoCodecOption} {_videoCodec} {AudioCodecOption} {_audioCodec} ";
-                }
-                else
-                {
-                    args += $"{CodecOption} {CopyCodec} ";
-                }
+                    await File.WriteAllTextAsync(tempFile, listContent, ct).ConfigureAwait(false);
 
-                args += $"\"{_outputPath}\"";
+                    string effectiveVideoCodec = _videoCodec ?? DefaultVideoCodec;
+                    string effectiveAudioCodec = _audioCodec ?? DefaultAudioCodec;
+
+                    var args = $"{FormatOption} {ConcatDemuxerFormat} {SafeOption} 0 {InputOption} \"{tempFile}\" ";
+
+                    if (_reencode)
+                    {
+                        args += $"{VideoCodecOption} {effectiveVideoCodec} {AudioCodecOption} {effectiveAudioCodec} ";
+                    }
+                    else
+                    {
+                        args += $"{CodecOption} {CopyCodec} ";
+                    }
+
+                    args += $"\"{_outputPath}\"";
+
+                    var startInfo = new ProcessStartInfo
+                    {
+                        FileName = ffmpegPath,
+                        Arguments = args,
+                        RedirectStandardOutput = true,
+                        RedirectStandardError = true,
+                        UseShellExecute = false,
+                        CreateNoWindow = true,
+                    };
+
+                    using var process = new Process { StartInfo = startInfo, EnableRaisingEvents = true };
+                    var tcs = new TaskCompletionSource<int>(TaskCreationOptions.RunContinuationsAsynchronously);
+
+                    process.Exited += (s, e) => tcs.TrySetResult(process.ExitCode);
+                    process.Start();
+
+                    // Drain output streams to avoid deadlocks.
+                    _ = process.StandardOutput.ReadToEndAsync(ct);
+                    _ = process.StandardError.ReadToEndAsync(ct);
+
+                    using (ct.Register(() =>
+                    {
+                        try { if (!process.HasExited) process.Kill(); } catch { }
+                    }))
+                    {
+                        var exitCode = await tcs.Task.ConfigureAwait(false);
+                        if (exitCode != 0)
+                            throw new InvalidOperationException($"ffmpeg exited with code {exitCode}.");
+                    }
+                }
+                finally
+                {
+                    try { File.Delete(tempFile); } catch { /* ignore cleanup failures */ }
+                }
+            }
+            else
+            {
+                // Filter mode
+                if (_inputs.Count == 0)
+                    throw new InvalidOperationException("No input files have been added.");
+
+                // Build input arguments: -i input1 -i input2 ...
+                var inputArgs = string.Join(" ", _inputs.Select(input => $"{InputOption} \"{input}\""));
+
+                // Build filter_complex for concat filter
+                var videoInputs = string.Concat(Enumerable.Range(0, _inputs.Count).Select(i => $"[{i}:v]"));
+                var audioInputs = string.Concat(Enumerable.Range(0, _inputs.Count).Select(i => $"[{i}:a]"));
+                var filter = $"{videoInputs}{audioInputs}concat=n={_inputs.Count}:v=1:a=1[v][a]";
+
+                string effectiveVideoCodec = _videoCodec ?? DefaultVideoCodec;
+                string effectiveAudioCodec = _audioCodec ?? DefaultAudioCodec;
+
+                var args = $"{inputArgs} -filter_complex \"{filter}\" -map \"[v]\" -map \"[a]\" {VideoCodecOption} {effectiveVideoCodec} {AudioCodecOption} {effectiveAudioCodec} \"{_outputPath}\"";
 
                 var startInfo = new ProcessStartInfo
                 {
@@ -150,10 +323,6 @@ namespace FFmpegFluent
                     if (exitCode != 0)
                         throw new InvalidOperationException($"ffmpeg exited with code {exitCode}.");
                 }
-            }
-            finally
-            {
-                try { File.Delete(tempFile); } catch { /* ignore cleanup failures */ }
             }
         }
     }
