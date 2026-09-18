@@ -2,6 +2,7 @@ using System;
 using System.Diagnostics;
 using System.Globalization;
 using System.IO;
+using System.Text;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -92,15 +93,22 @@ namespace FFmpegFluent
         /// </summary>
         /// <param name="filePath">The path to the media file to probe.</param>
         /// <param name="ffprobePath">The path to the ffprobe executable. Defaults to "ffprobe".</param>
+        /// <param name="maxOutputSize">The maximum allowed output size in bytes for stdout and stderr. Defaults to 10 MB.</param>
         /// <param name="ct">A cancellation token to cancel the operation.</param>
         /// <returns>A MediaInfo object containing information about the media file.</returns>
-        public static async Task<MediaInfo> ProbeAsync(string filePath, string ffprobePath = "ffprobe", CancellationToken ct = default)
+        /// <exception cref="ArgumentException">Thrown when <paramref name="filePath"/> is null, empty, or whitespace.</exception>
+        /// <exception cref="InvalidOperationException">Thrown when ffprobe fails, times out, or output exceeds <paramref name="maxOutputSize"/>.</exception>
+        /// <exception cref="TimeoutException">Thrown when the ffprobe operation times out.</exception>
+        public static async Task<MediaInfo> ProbeAsync(string filePath, string ffprobePath = "ffprobe", int maxOutputSize = 10 * 1024 * 1024, CancellationToken ct = default)
         {
+            ArgumentException.ThrowIfNullOrEmpty(filePath);
+
             var startInfo = new ProcessStartInfo
             {
                 FileName = ffprobePath,
                 Arguments = $"-v error -print_format json -show_format -show_streams \"{filePath}\"",
                 RedirectStandardOutput = true,
+                RedirectStandardError = true,
                 UseShellExecute = false,
                 CreateNoWindow = true
             };
@@ -113,12 +121,46 @@ namespace FFmpegFluent
             try
             {
                 process.Start();
-                var output = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
-                await process.WaitForExitAsync(cts.Token).ConfigureAwait(false);
+
+                var outputTask = ReadStreamWithLimitAsync(process.StandardOutput.BaseStream, maxOutputSize, cts.Token);
+                var errorTask = ReadStreamWithLimitAsync(process.StandardError.BaseStream, maxOutputSize, cts.Token);
+                var exitedTask = process.WaitForExitAsync(cts.Token);
+
+                // Wait for the process to exit first to avoid potential deadlocks
+                await exitedTask.ConfigureAwait(false);
+
+                string output;
+                string error;
+
+                try
+                {
+                    output = await outputTask.ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (cts.IsCancellationRequested)
+                {
+                    throw new TimeoutException("ffprobe timed out while reading output.");
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Failed to read ffprobe output.", ex);
+                }
+
+                try
+                {
+                    error = await errorTask.ConfigureAwait(false);
+                }
+                catch (OperationCanceledException) when (cts.IsCancellationRequested)
+                {
+                    throw new TimeoutException("ffprobe timed out while reading error output.");
+                }
+                catch (Exception ex)
+                {
+                    throw new InvalidOperationException("Failed to read ffprobe error output.", ex);
+                }
 
                 if (process.ExitCode != 0)
                 {
-                    throw new InvalidOperationException("ffprobe failed with non-zero exit code.");
+                    throw new InvalidOperationException($"ffprobe failed with exit code {process.ExitCode}. Error: {error}");
                 }
 
                 var json = JsonDocument.Parse(output);
@@ -176,10 +218,43 @@ namespace FFmpegFluent
                     sampleRate,
                     formatName);
             }
-            catch (Exception ex)
+            catch (Exception ex) when (ex is not InvalidOperationException and not TimeoutException)
             {
                 throw new InvalidOperationException("Failed to probe media file.", ex);
             }
+            finally
+            {
+                // Ensure the process has exited.
+                if (!process.HasExited)
+                {
+                    process.Kill();
+                }
+            }
+        }
+
+        private static async Task<string> ReadStreamWithLimitAsync(Stream stream, int maxBytes, CancellationToken ct)
+        {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            var buffer = new byte[8192];
+            using var ms = new MemoryStream();
+            int readBytes;
+
+            while ((readBytes = await stream.ReadAsync(buffer, 0, buffer.Length, ct).ConfigureAwait(false)) > 0)
+            {
+                // Check if we would exceed the limit
+                if (ms.Length + readBytes > maxBytes)
+                {
+                    // We've exceeded the limit, we throw.
+                    throw new InvalidOperationException($"Output exceeded {maxBytes} bytes.");
+                }
+
+                await ms.WriteAsync(buffer, 0, readBytes, ct).ConfigureAwait(false);
+            }
+
+            // We assume the output is UTF-8 (ffprobe outputs JSON in UTF-8)
+            return Encoding.UTF8.GetString(ms.ToArray());
         }
     }
 }
