@@ -31,6 +31,16 @@ namespace FFmpegFluent
     /// <summary>
     /// Preset for concatenating multiple media files using FFmpeg's concat demuxer or filter.
     /// </summary>
+    /// <example>
+    /// <code>
+    /// var preset = new ConcatPreset("output.mp4")
+    ///     .WithStrategy(ConcatStrategy.Auto)
+    ///     .AddInput("input1.mp4")
+    ///     .AddInput("input2.mp4")
+    ///     .WithReencode("libx264", "aac");
+    /// await preset.RunAsync();
+    /// </code>
+    /// </example>
     public sealed class ConcatPreset
     {
         private const string DefaultVideoCodec = "libx264";
@@ -198,6 +208,14 @@ namespace FFmpegFluent
         /// </summary>
         /// <param name="ffmpegPath">Path to the ffmpeg executable (default: "ffmpeg").</param>
         /// <param name="ct">Cancellation token.</param>
+        /// <example>
+        /// <code>
+        /// var preset = new ConcatPreset("output.mp4")
+        ///     .AddInput("clip1.mp4")
+        ///     .AddInput("clip2.mp4");
+        /// await preset.RunAsync();
+        /// </code>
+        /// </example>
         public async Task RunAsync(string ffmpegPath = "ffmpeg", CancellationToken ct = default)
         {
             if (string.IsNullOrWhiteSpace(ffmpegPath))
