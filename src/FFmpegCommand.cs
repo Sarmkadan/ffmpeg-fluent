@@ -231,7 +231,12 @@ public sealed class FFmpegCommand
     /// </summary>
     /// <returns>The command line arguments as a string.</returns>
     public string PreviewArguments() => BuildCommandLine();
-        public string BuildCommandLine()
+
+    /// <summary>
+    /// Builds the command line arguments for the command.
+    /// </summary>
+    /// <returns>The command line arguments as a string.</returns>
+    public string BuildCommandLine()
     {
         var args = new List<string>(_globalOptions);
 
@@ -313,7 +318,6 @@ public sealed class FFmpegCommand
     /// <param name="ct">An optional cancellation token.</param>
     /// <returns>The exit code of the command.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> is negative.</exception>
-    /// <exception cref="TimeoutException">The timeout elapses before the command completes.</exception>
     public async Task<int> RunAsync(IProgress<FFmpegProgress>? progress, Action<FFmpegProgress>? progressAction, TimeSpan? timeout, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(_locator);
@@ -344,7 +348,6 @@ public sealed class FFmpegCommand
         timeoutCts?.CancelAfter(timeout!.Value);
         var executionToken = timeoutCts?.Token ?? ct;
 
-        // Start stderr reader
         var stderrLines = new Queue<string>();
         var stderrReadTask = Task.Run(async () =>
         {
@@ -360,7 +363,6 @@ public sealed class FFmpegCommand
 
                     stderrLines.Enqueue(line);
 
-                    // Try to parse structured progress data
                     if (progress != null && FFmpegProgress.TryParse(line, out var ffmpegProgress) && ffmpegProgress != null)
                     {
                         progress.Report(ffmpegProgress);
@@ -385,15 +387,21 @@ public sealed class FFmpegCommand
                 stderrReadTask
             ).ConfigureAwait(false);
         }
-        catch (OperationCanceledException) when (timeoutCts?.IsCancellationRequested == true && !ct.IsCancellationRequested)
+        catch (OperationCanceledException)
         {
             if (!process.HasExited)
             {
                 process.Kill(entireProcessTree: true);
             }
+            await process.WaitForExitAsync().ConfigureAwait(false);
 
-            var commandLine = $"{_locator.FFmpegPath} {BuildCommandLine()}";
-            throw new TimeoutException($"FFmpeg command timed out after {timeout!.Value}: {commandLine}");
+            if (timeoutCts?.IsCancellationRequested == true && !ct.IsCancellationRequested)
+            {
+                var commandLine = $"{_locator.FFmpegPath} {BuildCommandLine()}";
+                throw new TimeoutException($"FFmpeg command timed out after {timeout!.Value}: {commandLine}");
+            }
+            
+            ct.ThrowIfCancellationRequested();
         }
 
         return await GetResultAsync(process, stderrLines).ConfigureAwait(false);
