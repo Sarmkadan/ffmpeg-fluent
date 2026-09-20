@@ -57,17 +57,38 @@ public sealed class FFmpegLocator : IFFmpegLocator
     /// Initializes a new instance of the <see cref="FFmpegLocator"/> class with default resolution behavior.
     /// </summary>
     public FFmpegLocator()
-        : this(explicitFFmpegPath: null, explicitFFprobePath: null)
     {
+        _explicitFFmpegPath = null;
+        _explicitFFprobePath = null;
     }
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FFmpegLocator"/> class with explicit paths.
     /// </summary>
-    /// <param name="explicitFFmpegPath">The explicit path to the FFmpeg executable, or <see langword="null"/> to use resolution order.</param>
-    /// <param name="explicitFFprobePath">The explicit path to the FFprobe executable, or <see langword="null"/> to use resolution order.</param>
+    /// <param name="explicitFFmpegPath">The explicit path to the FFmpeg executable. Cannot be null, empty, or whitespace.</param>
+    /// <param name="explicitFFprobePath">The explicit path to the FFprobe executable. Cannot be null, empty, or whitespace.</param>
+    /// <exception cref="ArgumentException">Thrown when <paramref name="explicitFFmpegPath"/> or <paramref name="explicitFFprobePath"/> is null, empty, or whitespace.</exception>
+    /// <exception cref="FileNotFoundException">Thrown when the specified executable file does not exist.</exception>
     public FFmpegLocator(string? explicitFFmpegPath, string? explicitFFprobePath)
     {
+        if (string.IsNullOrWhiteSpace(explicitFFmpegPath))
+        {
+            throw new ArgumentException("FFmpeg path cannot be null, empty, or whitespace.", nameof(explicitFFmpegPath));
+        }
+        if (string.IsNullOrWhiteSpace(explicitFFprobePath))
+        {
+            throw new ArgumentException("FFprobe path cannot be null, empty, or whitespace.", nameof(explicitFFprobePath));
+        }
+
+        if (!File.Exists(explicitFFmpegPath))
+        {
+            throw new FileNotFoundException($"FFmpeg executable not found at the specified path: '{Path.GetFullPath(explicitFFmpegPath)}'.", explicitFFmpegPath);
+        }
+        if (!File.Exists(explicitFFprobePath))
+        {
+            throw new FileNotFoundException($"FFprobe executable not found at the specified path: '{Path.GetFullPath(explicitFFprobePath)}'.", explicitFFprobePath);
+        }
+
         _explicitFFmpegPath = explicitFFmpegPath;
         _explicitFFprobePath = explicitFFprobePath;
     }
