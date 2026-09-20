@@ -283,7 +283,7 @@ namespace FFmpegFluent
                         try { if (!process.HasExited) process.Kill(); } catch { }
                     }))
                     {
-                        var exitCode = await tcs.Task.ConfigureAwait(false);
+                        var exitCode = await tcs.Task.WaitAsync(ct).ConfigureAwait(false);
                         if (exitCode != 0)
                             throw new InvalidOperationException($"ffmpeg exited with code {exitCode}.");
                     }
@@ -337,7 +337,7 @@ namespace FFmpegFluent
                     try { if (!process.HasExited) process.Kill(); } catch { }
                 }))
                 {
-                    var exitCode = await tcs.Task.ConfigureAwait(false);
+                    var exitCode = await tcs.Task.WaitAsync(ct).ConfigureAwait(false);
                     if (exitCode != 0)
                         throw new InvalidOperationException($"ffmpeg exited with code {exitCode}.");
                 }
