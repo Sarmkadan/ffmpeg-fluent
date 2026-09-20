@@ -1,6 +1,7 @@
 #nullable enable
 
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
@@ -101,15 +102,10 @@ public sealed class FFmpegLocator : IFFmpegLocator
             if (_ffmpegPath is null && !_ffmpegVerified)
             {
                 _ffmpegPath = ResolveFFmpegPath();
-                if (_ffmpegPath is not null)
-                {
-                    _ffmpegVersion = GetVersion(_ffmpegPath);
-                }
+                _ffmpegVersion = GetVersion(_ffmpegPath);
                 _ffmpegVerified = true;
             }
-            return _ffmpegPath ?? throw new InvalidOperationException(
-                "FFmpeg executable not found. Please ensure FFmpeg is installed and available in PATH, " +
-                "or set the FFMPEG_PATH environment variable to the full path of the ffmpeg executable.");
+            return _ffmpegPath;
         }
     }
 
@@ -121,44 +117,61 @@ public sealed class FFmpegLocator : IFFmpegLocator
             if (_ffprobePath is null && !_ffprobeVerified)
             {
                 _ffprobePath = ResolveFFprobePath();
-                if (_ffprobePath is not null)
-                {
-                    _ffprobeVersion = GetVersion(_ffprobePath);
-                }
+                _ffprobeVersion = GetVersion(_ffprobePath);
                 _ffprobeVerified = true;
             }
-            return _ffprobePath ?? throw new InvalidOperationException(
-                "FFprobe executable not found. Please ensure FFprobe is installed and available in PATH, " +
-                "or set the FFMPEG_PATH environment variable to the full path of the ffmpeg executable (which typically includes ffprobe).");
+            return _ffprobePath;
         }
     }
 
     /// <inheritdoc/>
-    public FFmpegVersion Version => FFmpegPath is not null ? _ffmpegVersion : throw new InvalidOperationException("FFmpeg executable not located.");
+    public FFmpegVersion Version => _ffmpegVerified ? _ffmpegVersion : throw new FFmpegNotFoundException("ffmpeg", Array.Empty<string>());
 
     /// <inheritdoc/>
-    public FFmpegVersion FFprobeVersion => FFprobePath is not null ? _ffprobeVersion : throw new InvalidOperationException("FFprobe executable not located.");
+    public FFmpegVersion FFprobeVersion => _ffprobeVerified ? _ffprobeVersion : throw new FFmpegNotFoundException("ffprobe", Array.Empty<string>());
 
     /// <inheritdoc/>
     public FFmpegCommand CreateCommand() => FFmpegCommand.Create(this);
 
-    private string? ResolveFFmpegPath()
+    /// <summary>
+    /// Attempts to locate the FFmpeg executable without throwing an exception.
+    /// </summary>
+    /// <param name="path">When this method returns, contains the located path if successful; otherwise, null.</param>
+    /// <returns>true if the executable was located; otherwise, false.</returns>
+    public bool TryLocate(out string? path)
     {
+        try
+        {
+            path = ResolveFFmpegPath();
+            return true;
+        }
+        catch (FFmpegNotFoundException)
+        {
+            path = null;
+            return false;
+        }
+    }
+
+    private string ResolveFFmpegPath()
+    {
+        var searchedLocations = new List<string>();
+
         // 1. Try explicit path
         if (_explicitFFmpegPath is not null)
         {
+            searchedLocations.Add($"explicit: {_explicitFFmpegPath}");
             TraceCandidate("ffmpeg", "explicit", _explicitFFmpegPath);
             if (File.Exists(_explicitFFmpegPath))
             {
                 TraceResolved("ffmpeg", _explicitFFmpegPath);
                 return _explicitFFmpegPath;
             }
-
             TraceFallback("ffmpeg", "environment variable", _explicitFFmpegPath);
         }
 
         // 2. Try FFMPEG_PATH environment variable
         var envPath = Environment.GetEnvironmentVariable("FFMPEG_PATH");
+        searchedLocations.Add($"FFMPEG_PATH env var: {envPath ?? "<unset>"}");
         TraceEnvironmentOverride("FFMPEG_PATH", envPath);
         if (envPath is not null && File.Exists(envPath))
         {
@@ -177,17 +190,22 @@ public sealed class FFmpegLocator : IFFmpegLocator
             return pathResult;
         }
 
+        var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+        searchedLocations.Add($"PATH search: {string.Join(", ", pathDirs)}");
         TraceFailure("ffmpeg", _explicitFFmpegPath, envPath);
-        return null;
+        throw new FFmpegNotFoundException("ffmpeg", searchedLocations.ToArray());
     }
 
-    private string? ResolveFFprobePath()
+    private string ResolveFFprobePath()
     {
+        var searchedLocations = new List<string>();
+
         // If explicit path was provided for ffmpeg, try to find ffprobe alongside it
         if (_explicitFFmpegPath is not null)
         {
             var ffprobeCandidate = Path.Combine(Path.GetDirectoryName(_explicitFFmpegPath) ?? string.Empty,
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ffprobe.exe" : "ffprobe");
+            searchedLocations.Add($"explicit ffmpeg directory: {ffprobeCandidate}");
             TraceCandidate("ffprobe", "explicit ffmpeg directory", ffprobeCandidate);
             if (File.Exists(ffprobeCandidate))
             {
@@ -200,11 +218,13 @@ public sealed class FFmpegLocator : IFFmpegLocator
 
         // Try FFMPEG_PATH environment variable directory
         var envPath = Environment.GetEnvironmentVariable("FFMPEG_PATH");
+        searchedLocations.Add($"FFMPEG_PATH env var directory: {envPath ?? "<unset>"}");
         TraceEnvironmentOverride("FFMPEG_PATH", envPath);
         if (envPath is not null)
         {
             var ffprobeCandidate = Path.Combine(Path.GetDirectoryName(envPath) ?? string.Empty,
                 RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ffprobe.exe" : "ffprobe");
+            searchedLocations.Add($"FFMPEG_PATH directory: {ffprobeCandidate}");
             TraceCandidate("ffprobe", "environment variable directory", ffprobeCandidate);
             if (File.Exists(ffprobeCandidate))
             {
@@ -224,8 +244,10 @@ public sealed class FFmpegLocator : IFFmpegLocator
             return pathResult;
         }
 
+        var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+        searchedLocations.Add($"PATH search: {string.Join(", ", pathDirs)}");
         TraceFailure("ffprobe", _explicitFFmpegPath, envPath);
-        return null;
+        throw new FFmpegNotFoundException("ffprobe", searchedLocations.ToArray());
     }
 
     private static string? Which(string executableName)
