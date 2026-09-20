@@ -6,6 +6,8 @@ using System.Diagnostics;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Text.RegularExpressions;
+using System.Threading;
+using System.Threading.Tasks;
 
 namespace FFmpegFluent;
 
@@ -150,6 +152,83 @@ public sealed class FFmpegLocator : IFFmpegLocator
             path = null;
             return false;
         }
+    }
+
+    /// <summary>
+    /// Asynchronously locates the FFmpeg executable by probing candidates and verifying their version.
+    /// </summary>
+    /// <param name="cancellationToken">A cancellation token to cancel the operation.</param>
+    /// <returns>A tuple containing the resolved path and the parsed version.</returns>
+    /// <exception cref="FFmpegNotFoundException">Thrown when no working FFmpeg executable is found.</exception>
+    public async Task<(string Path, FFmpegVersion Version)> LocateAsync(CancellationToken cancellationToken = default)
+    {
+        var searchedLocations = new List<string>();
+
+        // 1. Try explicit path
+        if (_explicitFFmpegPath is not null)
+        {
+            searchedLocations.Add($"explicit: {_explicitFFmpegPath}");
+            TraceCandidate("ffmpeg", "explicit", _explicitFFmpegPath);
+            if (File.Exists(_explicitFFmpegPath))
+            {
+                try
+                {
+                    var version = await GetVersionAsync(_explicitFFmpegPath, cancellationToken).ConfigureAwait(false);
+                    TraceResolved("ffmpeg", _explicitFFmpegPath);
+                    return (_explicitFFmpegPath, version);
+                }
+                catch (Exception ex)
+                {
+                    TraceFallback("ffmpeg", "environment variable", _explicitFFmpegPath);
+                    _traceSource.TraceEvent(TraceEventType.Warning, 0, FormattableString.Invariant(
+                        $"resolution=failed explicit path executable=ffmpeg error='{ex.Message}'"));
+                }
+            }
+        }
+
+        // 2. Try FFMPEG_PATH environment variable
+        var envPath = Environment.GetEnvironmentVariable("FFMPEG_PATH");
+        searchedLocations.Add($"FFMPEG_PATH env var: {envPath ?? "<unset>"}");
+        TraceEnvironmentOverride("FFMPEG_PATH", envPath);
+        if (envPath is not null && File.Exists(envPath))
+        {
+            try
+            {
+                var version = await GetVersionAsync(envPath, cancellationToken).ConfigureAwait(false);
+                TraceResolved("ffmpeg", envPath);
+                return (envPath, version);
+            }
+            catch (Exception ex)
+            {
+                TraceFallback("ffmpeg", "PATH", envPath);
+                _traceSource.TraceEvent(TraceEventType.Warning, 0, FormattableString.Invariant(
+                    $"resolution=failed env var executable=ffmpeg error='{ex.Message}'"));
+            }
+        }
+
+        // 3. Probe PATH
+        var executableName = RuntimeInformation.IsOSPlatform(OSPlatform.Windows) ? "ffmpeg.exe" : "ffmpeg";
+        var pathResult = Which(executableName);
+        if (pathResult is not null && File.Exists(pathResult))
+        {
+            try
+            {
+                var version = await GetVersionAsync(pathResult, cancellationToken).ConfigureAwait(false);
+                TraceResolved("ffmpeg", pathResult);
+                return (pathResult, version);
+            }
+            catch (Exception ex)
+            {
+                TraceFallback("ffmpeg", "PATH", pathResult);
+                _traceSource.TraceEvent(TraceEventType.Warning, 0, FormattableString.Invariant(
+                    $"resolution=failed path executable=ffmpeg error='{ex.Message}'"));
+            }
+        }
+
+        var pathDirs = Environment.GetEnvironmentVariable("PATH")?.Split(Path.PathSeparator) ?? Array.Empty<string>();
+        searchedLocations.Add($"PATH search: {string.Join(", ", pathDirs)}");
+        TraceFailure("ffmpeg", _explicitFFmpegPath, envPath);
+        throw new FFmpegNotFoundException("ffmpeg", searchedLocations.ToArray());
     }
 
     private string ResolveFFmpegPath()
@@ -360,6 +439,57 @@ public sealed class FFmpegLocator : IFFmpegLocator
             var output = process.StandardOutput.ReadToEnd();
             var error = process.StandardError.ReadToEnd();
             process.WaitForExit();
+
+            // Combine stdout and stderr as version info can appear in either
+            var versionOutput = output + error;
+
+            // Parse version from output like:
+            // ffmpeg version 5.1.2-0+deb12u1 Copyright (c) 2000-2023...
+            // ffmpeg version n6.0-3-g8b7c9d123 Copyright (c)...
+            var match = Regex.Match(versionOutput,
+                @"ffmpeg\s+version\s+(?:[nv]?(\d+)\.(\d+)\.(\d+)(?:[\.-](\d+))?)");
+
+            if (match.Success)
+            {
+                var major = int.Parse(match.Groups[1].Value);
+                var minor = int.Parse(match.Groups[2].Value);
+                var patch = int.Parse(match.Groups[3].Value);
+                var build = match.Groups[4].Success ? (int?)int.Parse(match.Groups[4].Value) : null;
+                return new FFmpegVersion(major, minor, patch, build);
+            }
+
+            throw new InvalidOperationException(
+                $"Could not parse FFmpeg version from executable at '{executablePath}'. " +
+                "Output did not match expected format.");
+        }
+        catch (Exception ex)
+        {
+            throw new InvalidOperationException(
+                $"Failed to verify FFmpeg executable at '{executablePath}'.", ex);
+        }
+    }
+
+    private static async Task<FFmpegVersion> GetVersionAsync(string executablePath, CancellationToken cancellationToken)
+    {
+        try
+        {
+            var process = new Process
+            {
+                StartInfo = new ProcessStartInfo
+                {
+                    FileName = executablePath,
+                    Arguments = "-version",
+                    RedirectStandardOutput = true,
+                    RedirectStandardError = true,
+                    UseShellExecute = false,
+                    CreateNoWindow = true
+                }
+            };
+
+            process.Start();
+            var output = await process.StandardOutput.ReadToEndAsync().ConfigureAwait(false);
+            var error = await process.StandardError.ReadToEndAsync().ConfigureAwait(false);
+            await process.WaitForExitAsync(cancellationToken).ConfigureAwait(false);
 
             // Combine stdout and stderr as version info can appear in either
             var versionOutput = output + error;
