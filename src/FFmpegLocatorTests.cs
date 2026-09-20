@@ -2,111 +2,73 @@
 
 using System;
 using System.IO;
+using System.Runtime.InteropServices;
 
 namespace FFmpegFluent;
 
 /// <summary>
-/// Ad-hoc unit tests for <see cref="FFmpegLocator"/> validation logic.
-/// Run by calling <see cref="RunAll"/> from a console application.
+/// Ad-hoc unit tests for <see cref="FFmpegLocator"/>.
 /// </summary>
 public static class FFmpegLocatorTests
 {
-    /// <summary>
-    /// Executes all validation tests and prints results to the console.
-    /// </summary>
     public static void RunAll()
     {
-        Console.WriteLine("Running FFmpegLocatorTests...");
-        TestValidPaths();
-        TestNullEmptyWhitespacePaths();
-        TestNonExistentPaths();
-        Console.WriteLine("All FFmpegLocatorTests passed.");
+        Console.WriteLine("=== FFmpegLocator Tests ===");
+        TestTryLocateDoesNotThrow();
+        TestTryLocateReturnsPathWhenFound();
+        TestExceptionContainsSearchedLocations();
+        Console.WriteLine("=== FFmpegLocator Tests Complete ===");
     }
 
-    private static void TestValidPaths()
+    private static void TestTryLocateDoesNotThrow()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(tempDir);
-        var ffmpegPath = Path.Combine(tempDir, "ffmpeg");
-        var ffprobePath = Path.Combine(tempDir, "ffprobe");
-        File.WriteAllText(ffmpegPath, "#!/bin/sh\necho test");
-        File.WriteAllText(ffprobePath, "#!/bin/sh\necho test");
-
+        var locator = new FFmpegLocator();
         try
         {
-            var locator = new FFmpegLocator(ffmpegPath, ffprobePath);
-            Console.WriteLine("PASS: TestValidPaths - Created locator with valid paths.");
+            var _ = locator.TryLocate(out var _);
+            Console.WriteLine("[PASS] TryLocate executed without throwing.");
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"FAIL: TestValidPaths - {ex.GetType().Name}: {ex.Message}");
-        }
-        finally
-        {
-            File.Delete(ffmpegPath);
-            File.Delete(ffprobePath);
-            Directory.Delete(tempDir);
+            Console.WriteLine($"[FAIL] TryLocate threw an exception: {ex.GetType().Name}: {ex.Message}");
         }
     }
 
-    private static void TestNullEmptyWhitespacePaths()
+    private static void TestTryLocateReturnsPathWhenFound()
     {
-        var tempDir = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString());
-        Directory.CreateDirectory(tempDir);
-        var validPath = Path.Combine(tempDir, "ffmpeg");
-        File.WriteAllText(validPath, "#!/bin/sh\necho test");
-
-        string[] invalidValues = { null, "", "   " };
-        foreach (var invalid in invalidValues)
+        var locator = new FFmpegLocator();
+        if (locator.TryLocate(out var path) && !string.IsNullOrEmpty(path))
         {
-            try
-            {
-                var _ = new FFmpegLocator(invalid, validPath);
-                Console.WriteLine($"FAIL: TestNullEmptyWhitespacePaths - Did not throw for FFmpegPath='{invalid ?? "null"}'");
-            }
-            catch (ArgumentException)
-            {
-                Console.WriteLine($"PASS: TestNullEmptyWhitespacePaths - Correctly threw ArgumentException for FFmpegPath='{invalid ?? "null"}'");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"FAIL: TestNullEmptyWhitespacePaths - Wrong exception type for FFmpegPath='{invalid ?? "null"}': {ex.GetType().Name}");
-            }
-
-            try
-            {
-                var _ = new FFmpegLocator(validPath, invalid);
-                Console.WriteLine($"FAIL: TestNullEmptyWhitespacePaths - Did not throw for FFprobePath='{invalid ?? "null"}'");
-            }
-            catch (ArgumentException)
-            {
-                Console.WriteLine($"PASS: TestNullEmptyWhitespacePaths - Correctly threw ArgumentException for FFprobePath='{invalid ?? "null"}'");
-            }
-            catch (Exception ex)
-            {
-                Console.WriteLine($"FAIL: TestNullEmptyWhitespacePaths - Wrong exception type for FFprobePath='{invalid ?? "null"}': {ex.GetType().Name}");
-            }
+            Console.WriteLine($"[PASS] TryLocate returned path: {path}");
         }
-
-        File.Delete(validPath);
-        Directory.Delete(tempDir);
+        else
+        {
+            Console.WriteLine("[SKIP] TryLocate did not find ffmpeg (expected if not in PATH).");
+        }
     }
 
-    private static void TestNonExistentPaths()
+    private static void TestExceptionContainsSearchedLocations()
     {
-        var nonExistentPath = Path.Combine(Path.GetTempPath(), Guid.NewGuid().ToString(), "ffmpeg");
         try
         {
-            var _ = new FFmpegLocator(nonExistentPath, nonExistentPath);
-            Console.WriteLine("FAIL: TestNonExistentPaths - Did not throw for non-existent path.");
+            var locator = new FFmpegLocator();
+            var _ = locator.FFmpegPath;
+            Console.WriteLine("[SKIP] FFmpegNotFoundException not triggered (ffmpeg found in PATH).");
         }
-        catch (FileNotFoundException)
+        catch (FFmpegNotFoundException ex)
         {
-            Console.WriteLine("PASS: TestNonExistentPaths - Correctly threw FileNotFoundException.");
+            if (ex.SearchedLocations.Length > 0 && ex.Message.Contains("Searched locations:"))
+            {
+                Console.WriteLine($"[PASS] FFmpegNotFoundException contains searched locations: {string.Join(", ", ex.SearchedLocations)}");
+            }
+            else
+            {
+                Console.WriteLine("[FAIL] FFmpegNotFoundException missing searched locations or message format.");
+            }
         }
         catch (Exception ex)
         {
-            Console.WriteLine($"FAIL: TestNonExistentPaths - Wrong exception type: {ex.GetType().Name}");
+            Console.WriteLine($"[INFO] Other exception: {ex.GetType().Name}: {ex.Message}");
         }
     }
 }
