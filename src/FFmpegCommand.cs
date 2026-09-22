@@ -50,6 +50,7 @@ public sealed class FFmpegCommand
     internal readonly List<string> _globalOptions = [];
     internal string? _passLogFilePath;
     private TimeSpan? _timeout;
+    private VideoOptions? _pendingVideo;
 
     /// <summary>
     /// Initializes a new instance of the <see cref="FFmpegCommand"/> class.
@@ -116,7 +117,28 @@ public sealed class FFmpegCommand
         ArgumentException.ThrowIfNullOrEmpty(path);
         var outputFile = new OutputFile(path);
         cfg?.Invoke(outputFile);
+        if (_pendingVideo is not null)
+        {
+            outputFile.SetVideo(_pendingVideo);
+            _pendingVideo = null;
+        }
         _outputs.Add(outputFile);
+        return this;
+    }
+
+    /// <summary>Configures immutable video options for the most recent output, or the next output when none exists.</summary>
+    /// <param name="configure">The video options builder configuration.</param>
+    /// <returns>The current command for further chaining.</returns>
+    public FFmpegCommand WithVideo(Action<VideoOptionsBuilder> configure)
+    {
+        ArgumentNullException.ThrowIfNull(configure);
+        var builder = new VideoOptionsBuilder();
+        configure(builder);
+        var video = builder.Build();
+        if (_outputs.Count == 0)
+            _pendingVideo = video;
+        else
+            _outputs[^1].SetVideo(video);
         return this;
     }
 
