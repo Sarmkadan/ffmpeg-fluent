@@ -2,6 +2,7 @@
 
 using System;
 using System.IO;
+using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -18,8 +19,57 @@ public static class ConcatPresetTests
     public static void RunTests()
     {
         Console.WriteLine("Running ConcatPresetTests...");
+        TestBuilder();
+        TestBuilderValidation();
         TestTempFileCleanupOnCancellation().Wait();
         Console.WriteLine("All ConcatPresetTests passed.");
+    }
+
+    private static void TestBuilder()
+    {
+        var command = ConcatPreset.Create()
+            .AddInput("first.mp4")
+            .AddInputs(new[] { "second.mp4", "third.mp4" }.AsEnumerable())
+            .Output("joined.mp4")
+            .ReEncode(true)
+            .Build();
+
+        var arguments = command.PreviewArguments();
+        AssertContains(arguments, "-i first.mp4");
+        AssertContains(arguments, "-i second.mp4");
+        AssertContains(arguments, "-i third.mp4");
+        AssertContains(arguments, "concat=n=3:v=1:a=1[v][a]");
+        AssertContains(arguments, "-c:v libx264");
+        AssertContains(arguments, "-c:a aac");
+        AssertContains(arguments, "joined.mp4");
+
+        var copyArguments = ConcatPreset.Create()
+            .AddInputs(new[] { "first.mp4", "second.mp4" })
+            .Output("joined.mp4")
+            .ReEncode(false)
+            .Build()
+            .PreviewArguments();
+        AssertContains(copyArguments, "-c copy");
+    }
+
+    private static void TestBuilderValidation()
+    {
+        AssertThrows<InvalidOperationException>(() => ConcatPreset.Create().Output("joined.mp4").Build());
+        AssertThrows<InvalidOperationException>(() => ConcatPreset.Create().AddInput("only.mp4").Output("joined.mp4").Build());
+        AssertThrows<InvalidOperationException>(() => ConcatPreset.Create().AddInputs(new[] { "one.mp4", "two.mp4" }).Build());
+    }
+
+    private static void AssertContains(string actual, string expected)
+    {
+        if (!actual.Contains(expected, StringComparison.Ordinal))
+            throw new InvalidOperationException($"Expected command to contain '{expected}', but was '{actual}'.");
+    }
+
+    private static void AssertThrows<T>(Action action) where T : Exception
+    {
+        try { action(); }
+        catch (T) { return; }
+        throw new InvalidOperationException($"Expected {typeof(T).Name}.");
     }
 
     private static async Task TestTempFileCleanupOnCancellation()

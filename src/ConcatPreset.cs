@@ -54,12 +54,22 @@ namespace FFmpegFluent
         private const string CodecOption = "-c";
         private const string CopyCodec = "copy";
 
-        private readonly string _outputPath;
+        private string? _outputPath;
         private readonly List<string> _inputs = new();
         private bool _reencode;
         private string _videoCodec = DefaultVideoCodec;
         private string _audioCodec = DefaultAudioCodec;
         private ConcatStrategy strategy = ConcatStrategy.Auto;
+
+        private ConcatPreset()
+        {
+        }
+
+        /// <summary>
+        /// Creates a fluent concat command builder.
+        /// </summary>
+        /// <returns>A new concat preset builder.</returns>
+        public static ConcatPreset Create() => new();
 
         /// <summary>
         /// Initializes a new instance of the <see cref="ConcatPreset"/> class.
@@ -93,6 +103,82 @@ namespace FFmpegFluent
 
             _inputs.Add(path);
             return this;
+        }
+
+        /// <summary>
+        /// Adds input files to be concatenated, in enumeration order.
+        /// </summary>
+        /// <param name="paths">Paths to the input files.</param>
+        /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
+        public ConcatPreset AddInputs(IEnumerable<string> paths)
+        {
+            ArgumentNullException.ThrowIfNull(paths);
+
+            foreach (var path in paths)
+                AddInput(path);
+
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the output path for a command created by <see cref="Create"/>.
+        /// </summary>
+        /// <param name="path">Path to the output file.</param>
+        /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
+        public ConcatPreset Output(string path)
+        {
+            if (string.IsNullOrWhiteSpace(path))
+                throw new ArgumentException("Output path cannot be null or whitespace.", nameof(path));
+
+            _outputPath = path;
+            return this;
+        }
+
+        /// <summary>
+        /// Selects whether the command should re-encode its streams.
+        /// </summary>
+        /// <param name="enabled"><see langword="true"/> to use the concat filter and default codecs; otherwise stream copy is used.</param>
+        /// <returns>The same <see cref="ConcatPreset"/> instance for fluent chaining.</returns>
+        public ConcatPreset ReEncode(bool enabled)
+        {
+            _reencode = enabled;
+            return this;
+        }
+
+        /// <summary>
+        /// Builds an <see cref="FFmpegCommand"/> for the configured concatenation.
+        /// </summary>
+        /// <returns>The configured command.</returns>
+        /// <exception cref="InvalidOperationException">Fewer than two inputs were added, or no output was set.</exception>
+        public FFmpegCommand Build()
+        {
+            if (_inputs.Count < 2)
+                throw new InvalidOperationException("At least two input files are required for concatenation.");
+            if (string.IsNullOrWhiteSpace(_outputPath))
+                throw new InvalidOperationException("An output path is required for concatenation.");
+
+            var command = FFmpegCommand.Create();
+            foreach (var input in _inputs)
+                command.AddInput(input);
+
+            if (_reencode)
+            {
+                var streamInputs = string.Concat(
+                    Enumerable.Range(0, _inputs.Count).Select(i => $"[{i}:v][{i}:a]"));
+                command.WithFilterGraph(graph =>
+                    graph.AddFilter($"{streamInputs}concat=n={_inputs.Count}:v=1:a=1[v][a]"));
+                command.AddOutput(_outputPath, output => output
+                    .Option("map", "[v]")
+                    .Option("map", "[a]")
+                    .WithVideo(video => video.Codec(_videoCodec))
+                    .WithAudio(audio => audio.Codec(_audioCodec)));
+            }
+            else
+            {
+                command.AddOutput(_outputPath, output => output.Option("c", CopyCodec));
+            }
+
+            return command;
         }
 
         /// <summary>
