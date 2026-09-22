@@ -14,6 +14,7 @@ public sealed class VideoOptions
     internal string? _bitrate;
     internal int? _crf;
     internal string? _preset;
+    internal string? _pixelFormat;
     internal double? _frameRate;
     internal int? _width;
     internal int? _height;
@@ -22,6 +23,35 @@ public sealed class VideoOptions
     internal int? _cropWidth;
     internal int? _cropHeight;
     internal bool _noVideo;
+    private bool _isReadOnly;
+
+    /// <summary>Initializes an empty, mutable set of video options.</summary>
+    public VideoOptions()
+    {
+    }
+
+    internal VideoOptions(
+        string? codec, string? bitrate, double? frameRate, int? width, int? height,
+        int? crf, string? preset, string? pixelFormat)
+    {
+        _codec = codec;
+        _bitrate = bitrate;
+        _frameRate = frameRate;
+        _width = width;
+        _height = height;
+        _crf = crf;
+        _preset = preset;
+        _pixelFormat = pixelFormat;
+        _isReadOnly = true;
+    }
+
+    private void EnsureMutable()
+    {
+        if (_isReadOnly)
+        {
+            throw new InvalidOperationException("VideoOptions instances created by VideoOptionsBuilder are immutable.");
+        }
+    }
 
     /// <summary>
     /// Sets the video codec (e.g., "libx264").
@@ -32,6 +62,7 @@ public sealed class VideoOptions
     /// <exception cref="ArgumentException"><paramref name="codec"/> is empty or whitespace.</exception>
     public VideoOptions Codec(string codec)
     {
+        EnsureMutable();
         ArgumentNullException.ThrowIfNull(codec);
         if (string.IsNullOrWhiteSpace(codec))
         {
@@ -51,6 +82,7 @@ public sealed class VideoOptions
     /// <exception cref="ArgumentException"><paramref name="bitrate"/> is empty or whitespace.</exception>
     public VideoOptions Bitrate(string bitrate)
     {
+        EnsureMutable();
         ArgumentNullException.ThrowIfNull(bitrate);
         if (string.IsNullOrWhiteSpace(bitrate))
         {
@@ -69,6 +101,7 @@ public sealed class VideoOptions
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="crf"/> is outside the valid range (0-51).</exception>
     public VideoOptions Crf(int crf)
     {
+        EnsureMutable();
         if (crf < 0 || crf > 51)
         {
             throw new ArgumentOutOfRangeException(nameof(crf), "CRF must be between 0 and 51.");
@@ -87,6 +120,7 @@ public sealed class VideoOptions
     /// <exception cref="ArgumentException"><paramref name="preset"/> is empty or whitespace.</exception>
     public VideoOptions Preset(string preset)
     {
+        EnsureMutable();
         ArgumentNullException.ThrowIfNull(preset);
         if (string.IsNullOrWhiteSpace(preset))
         {
@@ -105,6 +139,7 @@ public sealed class VideoOptions
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="fps"/> is not positive.</exception>
     public VideoOptions FrameRate(double fps)
     {
+        EnsureMutable();
         if (fps <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(fps), "Frame rate must be a positive value.");
@@ -123,6 +158,7 @@ public sealed class VideoOptions
     /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is not positive.</exception>
     public VideoOptions Resolution(int width, int height)
     {
+        EnsureMutable();
         if (width <= 0)
         {
             throw new ArgumentOutOfRangeException(nameof(width), "Width must be a positive value.");
@@ -138,6 +174,20 @@ public sealed class VideoOptions
         return this;
     }
 
+    /// <summary>Sets the output pixel format (for example, <c>yuv420p</c>).</summary>
+    public VideoOptions PixelFormat(string pixelFormat)
+    {
+        EnsureMutable();
+        ArgumentNullException.ThrowIfNull(pixelFormat);
+        if (string.IsNullOrWhiteSpace(pixelFormat))
+        {
+            throw new ArgumentException("Pixel format cannot be empty or whitespace.", nameof(pixelFormat));
+        }
+
+        _pixelFormat = pixelFormat;
+        return this;
+    }
+
     /// <summary>
     /// Crops the video to the specified rectangle. All parameters must be non-negative.
     /// This will be emitted as a crop video filter.
@@ -150,6 +200,7 @@ public sealed class VideoOptions
     /// <exception cref="ArgumentOutOfRangeException">Thrown if any parameter is negative.</exception>
     public VideoOptions Crop(int width, int height, int x, int y)
     {
+        EnsureMutable();
         if (width < 0)
         {
             throw new ArgumentOutOfRangeException(nameof(width), "Crop width must be non-negative");
@@ -180,6 +231,7 @@ public sealed class VideoOptions
     /// <returns>The same <see cref="VideoOptions"/> instance for fluent chaining.</returns>
     public VideoOptions NoVideo()
     {
+        EnsureMutable();
         _noVideo = true;
         return this;
     }
@@ -201,6 +253,7 @@ public sealed class VideoOptions
             if (!string.IsNullOrEmpty(_bitrate)) count += 2;
             if (_crf.HasValue) count += 2;
             if (!string.IsNullOrEmpty(_preset)) count += 2;
+            if (!string.IsNullOrEmpty(_pixelFormat)) count += 2;
             if (_frameRate.HasValue) count += 2;
             if (_width.HasValue && _height.HasValue) count += 2;
             if (_cropWidth.HasValue && _cropHeight.HasValue && _cropX.HasValue && _cropY.HasValue) count += 2;
@@ -246,6 +299,12 @@ public sealed class VideoOptions
             {
                 args[i++] = "-preset";
                 args[i++] = _preset;
+            }
+
+            if (!string.IsNullOrEmpty(_pixelFormat))
+            {
+                args[i++] = "-pix_fmt";
+                args[i++] = _pixelFormat;
             }
 
             if (_frameRate.HasValue)

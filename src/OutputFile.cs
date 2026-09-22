@@ -49,6 +49,8 @@ public sealed class OutputFile
         return this;
     }
 
+    internal void SetVideo(VideoOptions video) => Video = video;
+
     /// <summary>
     /// Configures the audio options for this output file using the provided configuration action.
     /// </summary>
