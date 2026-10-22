@@ -10,10 +10,15 @@ namespace FFmpegFluent;
 /// </summary>
 public enum WatermarkPosition
 {
+    /// <summary>Top-left corner of the video.</summary>
     TopLeft,
+    /// <summary>Top-right corner of the video.</summary>
     TopRight,
+    /// <summary>Bottom-left corner of the video.</summary>
     BottomLeft,
+    /// <summary>Bottom-right corner of the video.</summary>
     BottomRight,
+    /// <summary>Centre of the video.</summary>
     Center
 }
 

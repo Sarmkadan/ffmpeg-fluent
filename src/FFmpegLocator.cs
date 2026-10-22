@@ -114,7 +114,8 @@ public sealed class FFmpegLocator : IFFmpegLocator
                 _ffmpegVersion = GetVersion(_ffmpegPath);
                 _ffmpegVerified = true;
             }
-            return _ffmpegPath;
+            // ResolveFFmpegPath throws when nothing is found, so a non-null path is guaranteed here.
+            return _ffmpegPath!;
         }
     }
 
@@ -129,7 +130,8 @@ public sealed class FFmpegLocator : IFFmpegLocator
                 _ffprobeVersion = GetVersion(_ffprobePath);
                 _ffprobeVerified = true;
             }
-            return _ffprobePath;
+            // ResolveFFprobePath throws when nothing is found, so a non-null path is guaranteed here.
+            return _ffprobePath!;
         }
     }
 

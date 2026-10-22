@@ -64,11 +64,6 @@ public sealed class InputFile
     /// <param name="key">The option key (e.g., "re").</param>
     /// <param name="value">The optional value. If null, only the key is added.</param>
     /// <returns>The current <see cref="InputFile"/> instance for fluent chaining.</returns>
-    /// <summary>
-    /// Adds a custom option for the input file.
-    /// </summary>
-    /// <param name="key">The option key (e.g., "re").</param>
-    /// <param name="value">The optional value. If null, only the key is added.</param>
     public InputFile Option(string key, string? value = null)
     {
         ArgumentException.ThrowIfNullOrEmpty(key);

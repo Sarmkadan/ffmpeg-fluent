@@ -193,7 +193,7 @@ public sealed class FFmpegCommand
     /// Builds the command line arguments for the specified encoding pass.
     /// </summary>
     /// <param name="pass">The pass number (1 or 2).</param>
-    /// <returns>An <see cref="IEnumerable"/> of <see cref="string"/> containing the arguments for the specified pass.</returns>
+    /// <returns>An <see cref="IEnumerable{T}"/> of <see cref="string"/> containing the arguments for the specified pass.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="pass"/> is not 1 or 2.</exception>
     public IEnumerable<string> BuildPassArguments(int pass)
     {
@@ -375,12 +375,12 @@ public sealed class FFmpegCommand
         {
             try
             {
-                while (!process.StandardError.EndOfStream)
+                while (true)
                 {
                     var line = await process.StandardError.ReadLineAsync(executionToken).ConfigureAwait(false);
                     if (line is null)
                     {
-                        continue;
+                        break;
                     }
 
                     stderrLines.Enqueue(line);

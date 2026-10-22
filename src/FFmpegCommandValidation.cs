@@ -4,6 +4,9 @@ using System.Linq;
 
 namespace FFmpegFluent;
 
+/// <summary>
+/// Non-throwing validation helpers for <see cref="FFmpegCommand"/>.
+/// </summary>
 public static class FFmpegCommandValidation
 {
     /// <summary>
