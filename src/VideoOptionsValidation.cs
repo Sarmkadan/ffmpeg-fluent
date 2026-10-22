@@ -2,7 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Globalization;
-using System.Text.RegularExpressions;
 
 namespace FFmpegFluent;
 
@@ -11,10 +10,6 @@ namespace FFmpegFluent;
 /// </summary>
 public static class VideoOptionsValidation
 {
-    private static readonly Regex _bitrateFormat = new(
-        @"^(?<value>[0-9]+(\.[0-9]+)?)[kKMG]?\z",
-        RegexOptions.CultureInvariant);
-
     /// <summary>
     /// Returns <see langword="true"/> if <paramref name="value"/> is a usable scale dimension:
     /// a positive pixel count, or -1/-2 to let FFmpeg derive that side from the aspect ratio.
@@ -111,14 +106,13 @@ public static class VideoOptionsValidation
 
     private static IEnumerable<string> ValidateBitrate(string bitrate)
     {
-        var match = _bitrateFormat.Match(bitrate);
-        if (!match.Success)
+        if (!BitrateFormat.TryParse(bitrate, out var bitsPerSecond))
         {
             yield return $"Bitrate '{bitrate}' is not in FFmpeg format: a number with an optional k, M or G suffix (for example '500k' or '2M').";
             yield break;
         }
 
-        if (double.Parse(match.Groups["value"].Value, NumberStyles.AllowDecimalPoint, CultureInfo.InvariantCulture) <= 0)
+        if (bitsPerSecond <= 0)
         {
             yield return $"Bitrate '{bitrate}' must be greater than zero.";
         }

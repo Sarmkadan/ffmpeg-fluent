@@ -35,9 +35,9 @@
 ### `AudioOptions Volume`
 **Purpose**: Adjusts the audio volume as a multiplier (e.g., `0.5` for 50% volume).
 **Parameters**:
-- `volume` (`double`): The volume multiplier. Must be between `0.0` and `1.0`.
+- `volume` (`double`): The volume multiplier. Must be non-negative; values above `1.0` boost the signal.
 **Returns**: The current `AudioOptions` instance for method chaining.
-**Throws**: `ArgumentOutOfRangeException` if `volume` is outside the `[0.0, 1.0]` range.
+**Throws**: `ArgumentOutOfRangeException` if `volume` is negative. `NaN` and infinity are rejected by `Validate()`.
 
 ### `AudioOptions NoAudio`
 **Purpose**: Disables audio processing entirely.
@@ -52,7 +52,27 @@
 **Notes**:
 - Returns an empty sequence if `NoAudio` is set.
 - Arguments are ordered logically (codec before bitrate, etc.).
-- Does not validate codec compatibility with FFmpeg.
+- Does not validate the options; use `Validate()` for that.
+
+### `IReadOnlyList<string> Validate()` / `bool IsValid()` / `void EnsureValid()`
+**Purpose**: Checks the configuration without launching FFmpeg. `Validate()` returns every problem found; `EnsureValid()` throws `FFmpegOptionsValidationException` carrying the same list in its `Errors` property. `FFmpegCommand.RunAsync` runs this check for every output (video and audio) before the process starts.
+
+Rules (ignored entirely when `NoAudio` is set):
+- Codec: must be a known encoder name, case-insensitive (for example `aac`, `libmp3lame`, `libopus`, `flac`, `copy`, or any `pcm_*`/`adpcm_*` encoder). Unknown names are rejected.
+- Sample rate: must be one of the standard rates. Without a codec the set is 8000-192000 Hz (`8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000, 64000, 88200, 96000, 176400, 192000`). Codec subsets:
+  - `aac`, `libfdk_aac`: the MPEG-4 AAC table, which also includes `7350`.
+  - `libmp3lame`: `8000, 11025, 12000, 16000, 22050, 24000, 32000, 44100, 48000`.
+  - `libopus`, `opus`: `8000, 12000, 16000, 24000, 48000`.
+- Channels: 1-8.
+- Volume: finite and non-negative (rejects `NaN` and infinity).
+- Bitrate: `<number>[k|K|M|G]` with an optional decimal part (e.g. `128k`, `1.5M`, `128000`), greater than zero. Ambiguous forms such as `2m` or `2MB` are rejected.
+- Bitrate range: `libmp3lame` 32k-320k, `aac`/`libfdk_aac` 32k-512k. Other codecs are not range-checked.
+
+**Returns:**
+`IReadOnlyList<string>` from `Validate()` (empty if valid); `bool` from `IsValid()`; `void` from `EnsureValid()`.
+
+**Throws:**
+`FFmpegOptionsValidationException` - From `EnsureValid()` and `RunAsync`, when any rule fails.
 
 ## Usage
 

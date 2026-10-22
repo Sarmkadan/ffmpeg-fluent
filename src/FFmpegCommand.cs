@@ -332,15 +332,20 @@ public sealed class FFmpegCommand
     }
 
     /// <summary>
-    /// Checks the video options of every output and throws once with all problems, so FFmpeg is never launched with them.
+    /// Checks the video and audio options of every output and throws once with all problems, so FFmpeg is never launched with them.
     /// </summary>
-    /// <exception cref="FFmpegOptionsValidationException">Thrown when any output has invalid video options.</exception>
-    private void EnsureOutputVideoValid()
+    /// <exception cref="FFmpegOptionsValidationException">Thrown when any output has invalid video or audio options.</exception>
+    private void EnsureOutputOptionsValid()
     {
         var errors = new List<string>();
         foreach (var output in _outputs)
         {
             foreach (var problem in output.Video.Validate())
+            {
+                errors.Add($"Output '{output.Path}': {problem}");
+            }
+
+            foreach (var problem in output.Audio.Validate())
             {
                 errors.Add($"Output '{output.Path}': {problem}");
             }
@@ -361,11 +366,11 @@ public sealed class FFmpegCommand
     /// <param name="ct">An optional cancellation token.</param>
     /// <returns>The exit code of the command.</returns>
     /// <exception cref="ArgumentOutOfRangeException">Thrown when <paramref name="timeout"/> is negative.</exception>
-    /// <exception cref="FFmpegOptionsValidationException">Thrown before FFmpeg starts when any output's video options are invalid.</exception>
+    /// <exception cref="FFmpegOptionsValidationException">Thrown before FFmpeg starts when any output's video or audio options are invalid.</exception>
     public async Task<int> RunAsync(IProgress<FFmpegProgress>? progress, Action<FFmpegProgress>? progressAction, TimeSpan? timeout, CancellationToken ct = default)
     {
         ArgumentNullException.ThrowIfNull(_locator);
-        EnsureOutputVideoValid();
+        EnsureOutputOptionsValid();
 
         if (timeout.HasValue && timeout.Value < TimeSpan.Zero)
         {
