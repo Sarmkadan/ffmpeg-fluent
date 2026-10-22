@@ -205,6 +205,9 @@ public sealed class NormalizeAudioPreset
         }
     }
 
+    /// <summary>
+    /// Returns the normalize-audio settings as a human-readable string.
+    /// </summary>
     public override string ToString() =>
         $"normalize-audio(target_integrated={_targetIntegrated},target_true_peak={_targetTruePeak},target_lra={_targetLra},normalize={_normalize},print_metadata={_printMetadata}{(string.IsNullOrEmpty(_measurementInput) ? "" : $",measurement_input=" + _measurementInput)}";
 }

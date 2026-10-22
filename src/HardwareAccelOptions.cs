@@ -7,10 +7,15 @@ namespace FFmpegFluent
     /// </summary>
     public enum HwAccelKind
     {
+        /// <summary>No hardware acceleration; software encoding.</summary>
         None,
+        /// <summary>NVIDIA NVENC/NVDEC.</summary>
         Nvenc,
+        /// <summary>Intel Quick Sync Video.</summary>
         Qsv,
+        /// <summary>VA-API (Linux).</summary>
         Vaapi,
+        /// <summary>Apple VideoToolbox (macOS).</summary>
         VideoToolbox
     }
 
@@ -97,6 +102,9 @@ namespace FFmpegFluent
             };
         }
 
+        /// <summary>
+        /// Returns the acceleration kind and device as a human-readable string.
+        /// </summary>
         public override string ToString() => $"HardwareAccelOptions {{ Kind = {Kind}, Device = {Device?.ToString() ?? "null"} }}";
     }
 }
