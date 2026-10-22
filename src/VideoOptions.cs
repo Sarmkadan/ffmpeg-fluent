@@ -94,17 +94,19 @@ public sealed class VideoOptions
     }
 
     /// <summary>
-    /// Sets the Constant Rate Factor (CRF) value.
+    /// Sets the Constant Rate Factor (CRF) value. The range depends on the codec (0-51 for libx264/libx265,
+    /// 0-63 for libvpx-vp9/libaom-av1); that check runs in <see cref="VideoOptionsValidation.Validate(VideoOptions)"/>
+    /// because the codec may be set after the CRF.
     /// </summary>
-    /// <param name="crf">The CRF value (typically 0-51, where lower is higher quality).</param>
+    /// <param name="crf">The CRF value (lower is higher quality).</param>
     /// <returns>The same <see cref="VideoOptions"/> instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="crf"/> is outside the valid range (0-51).</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="crf"/> is outside 0-63, the widest range any supported codec uses.</exception>
     public VideoOptions Crf(int crf)
     {
         EnsureMutable();
-        if (crf < 0 || crf > 51)
+        if (crf < 0 || crf > 63)
         {
-            throw new ArgumentOutOfRangeException(nameof(crf), "CRF must be between 0 and 51.");
+            throw new ArgumentOutOfRangeException(nameof(crf), "CRF must be between 0 and 63.");
         }
 
         _crf = crf;
@@ -152,21 +154,22 @@ public sealed class VideoOptions
     /// <summary>
     /// Sets the output resolution. This will be emitted as a scale video filter.
     /// </summary>
-    /// <param name="width">The target width in pixels (must be positive).</param>
-    /// <param name="height">The target height in pixels (must be positive).</param>
+    /// <param name="width">The target width in pixels (must be positive, or -1/-2 to scale automatically).</param>
+    /// <param name="height">The target height in pixels (must be positive, or -1/-2 to scale automatically).</param>
     /// <returns>The same <see cref="VideoOptions"/> instance for fluent chaining.</returns>
-    /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is not positive.</exception>
+    /// <exception cref="ArgumentOutOfRangeException"><paramref name="width"/> or <paramref name="height"/> is neither positive nor -1/-2.</exception>
+    /// <remarks>Passing -1 or -2 for both dimensions is rejected by <see cref="VideoOptionsValidation.Validate(VideoOptions)"/>.</remarks>
     public VideoOptions Resolution(int width, int height)
     {
         EnsureMutable();
-        if (width <= 0)
+        if (!VideoOptionsValidation.IsValidDimension(width))
         {
-            throw new ArgumentOutOfRangeException(nameof(width), "Width must be a positive value.");
+            throw new ArgumentOutOfRangeException(nameof(width), "Width must be a positive value or -1/-2 for automatic scaling.");
         }
 
-        if (height <= 0)
+        if (!VideoOptionsValidation.IsValidDimension(height))
         {
-            throw new ArgumentOutOfRangeException(nameof(height), "Height must be a positive value.");
+            throw new ArgumentOutOfRangeException(nameof(height), "Height must be a positive value or -1/-2 for automatic scaling.");
         }
 
         _width = width;

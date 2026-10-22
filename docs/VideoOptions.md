@@ -42,7 +42,10 @@ Configures the Constant Rate Factor (CRF) for quality-based encoding.
 `VideoOptions` - The current instance for method chaining.
 
 **Throws:**  
-`ArgumentOutOfRangeException` - If the CRF value is outside the valid range for the selected codec.
+`ArgumentOutOfRangeException` - If the CRF value is outside 0-63 (the widest range any supported codec uses).
+
+**Validation:**  
+The codec-specific range is checked by `Validate()`, not here, because the codec may be set after the CRF: 0-51 for `libx264`/`libx265`, 0-63 for `libvpx-vp9`/`libaom-av1`.
 
 ---
 
@@ -85,6 +88,27 @@ Sets the output video resolution.
 
 **Throws:**  
 `FormatException` - If the resolution string is not in the correct format.
+
+**Validation:**  
+Width and height may be a positive pixel count or `-1`/`-2` to scale that side automatically. Setting both to automatic is rejected by `Validate()`.
+
+---
+
+### Validate / EnsureValid
+Checks the configuration without launching FFmpeg. `Validate()` returns every problem found; `EnsureValid()` throws `FFmpegOptionsValidationException` carrying the same list in its `Errors` property. `FFmpegCommand.RunAsync` runs this check for every output before the process starts.
+
+Rules:
+- Width/height: positive, or `-1`/`-2`; not both automatic.
+- Frame rate: finite and positive (rejects `NaN` and infinity).
+- Bitrate: `<number>[k|K|M|G]` with an optional decimal part (e.g. `500k`, `2M`, `1.5M`), and greater than zero. Strings FFmpeg would accept but that are ambiguous (`2m` is milli-bits, `2MB`) are rejected.
+- CRF: within the codec range (see `Crf`).
+- CRF with a fixed bitrate is rejected for `libx264`/`libx265` and for an unset codec, where the two rate-control modes conflict. It is allowed for `libvpx-vp9`/`libaom-av1` (constrained quality).
+
+**Returns:**  
+`IReadOnlyList<string>` from `Validate()` (empty if valid); `void` from `EnsureValid()`.
+
+**Throws:**  
+`FFmpegOptionsValidationException` - From `EnsureValid()` and `RunAsync`, when any rule fails.
 
 ---
 

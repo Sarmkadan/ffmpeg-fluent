@@ -37,7 +37,7 @@ await FFmpegCommand.Create()
         .WithVideo(v => v
             .Codec("libx264")
             .Resolution(1280, 720)   // emits -vf scale=1280:720 (does not keep aspect ratio)
-            .Crf(23)                 // 0-51, lower is higher quality
+            .Crf(23)                 // 0-51 for libx264/libx265, lower is higher quality
             .Preset("medium"))
         .WithAudio(a => a
             .Codec("aac")

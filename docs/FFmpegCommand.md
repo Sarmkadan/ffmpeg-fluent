@@ -113,5 +113,6 @@ int exitCode = await command.RunAsync();
 - `BuildCommandLine` does not automatically quote arguments that contain spaces. Callers should ensure that file paths either lack spaces or are manually quoted before being passed to the methods.
 - Global options added via `GlobalOption` are placed before any input options, matching typical FFmpeg command line ordering.
 - If no inputs or no outputs have been added, both `BuildCommandLine` and `RunAsync` throw an `InvalidOperationException`.
+- `RunAsync` validates each output's `VideoOptions` before starting FFmpeg and throws `FFmpegOptionsValidationException` listing every problem across all outputs (see `VideoOptions.md`).
 - The `RunAsync` method disposes of the started `System.Diagnostics.Process` automatically; callers do not need to manage process handles.
 - Cancellation is cooperative: if the supplied `CancellationToken` is triggered, the FFmpeg process is killed and an `OperationCanceledException` is propagated.
