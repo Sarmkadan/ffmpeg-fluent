@@ -1,5 +1,113 @@
 # ffmpeg-fluent
 
+## Getting Started
+
+### Installation
+
+```bash
+dotnet add package FFmpegFluent
+```
+
+The library shells out to `ffmpeg` and `ffprobe`, so both must be installed and reachable on your
+machine (see [Locating FFmpeg](#locating-ffmpeg)). Everything else is BCL only.
+
+### Minimal transcode
+
+```csharp
+using FFmpegFluent;
+
+await FFmpegCommand.Create()
+    .AddInput("input.mov")
+    .AddOutput("output.mp4", o => o.Overwrite())
+    .RunAsync();
+```
+
+`Overwrite()` passes `-y`. Without it, ffmpeg stops to ask before replacing an existing
+`output.mp4` and waits on stdin, which the library never answers, so `RunAsync` hangs.
+
+### Transcode with video and audio options
+
+```csharp
+using FFmpegFluent;
+
+await FFmpegCommand.Create()
+    .AddInput("input.mov")
+    .AddOutput("output.mp4", o => o
+        .Overwrite()
+        .WithVideo(v => v
+            .Codec("libx264")
+            .Resolution(1280, 720)   // emits -vf scale=1280:720 (does not keep aspect ratio)
+            .Crf(23)                 // 0-51, lower is higher quality
+            .Preset("medium"))
+        .WithAudio(a => a
+            .Codec("aac")
+            .Bitrate("128k")))
+    .RunAsync();
+```
+
+### Running asynchronously with cancellation
+
+`RunAsync` returns `Task<int>` with the process exit code. A non-zero exit code throws
+`FFmpegException` (with `ExitCode`, `StdErr` and the command line). Cancelling the token kills the
+ffmpeg process tree and throws `OperationCanceledException`.
+
+```csharp
+using FFmpegFluent;
+
+using var cts = new CancellationTokenSource(TimeSpan.FromMinutes(5));
+
+try
+{
+    await FFmpegCommand.Create()
+        .AddInput("input.mov")
+        .AddOutput("output.mp4", o => o
+            .Overwrite()
+            .WithVideo(v => v.Crf(23).Preset("fast")))
+        .RunAsync(ct: cts.Token);
+}
+catch (OperationCanceledException)
+{
+    Console.WriteLine("Transcode cancelled.");
+}
+catch (FFmpegException ex)
+{
+    Console.WriteLine($"ffmpeg exited with {ex.ExitCode}:{Environment.NewLine}{ex.StdErr}");
+}
+```
+
+To cap the run time without a token, use `RunAsync(TimeSpan.FromMinutes(10), ct)`. This throws
+`TimeoutException` when the limit elapses.
+
+### Locating FFmpeg
+
+`FFmpegCommand.Create()` uses `FFmpegLocator.Instance`, which resolves the binaries in this order
+and verifies each candidate by running `-version`:
+
+1. Explicit paths passed to `new FFmpegLocator(ffmpegPath, ffprobePath)`.
+2. The `FFMPEG_PATH` environment variable, which points at the `ffmpeg` executable. `ffprobe` is
+   looked up in the same directory.
+3. A probe of the `PATH` environment variable.
+
+To override the path in code, pass a locator to `FFmpegCommand.Create`. Both paths are required,
+and the constructor throws `FileNotFoundException` if either file does not exist:
+
+```csharp
+using FFmpegFluent;
+
+var locator = new FFmpegLocator("/opt/ffmpeg/bin/ffmpeg", "/opt/ffmpeg/bin/ffprobe");
+
+await FFmpegCommand.Create(locator)
+    .AddInput("input.mov")
+    .AddOutput("output.mp4", o => o.Overwrite())
+    .RunAsync();
+```
+
+To override it without code changes, set the environment variable instead:
+
+```bash
+export FFMPEG_PATH=/opt/ffmpeg/bin/ffmpeg
+```
+
 ## Architecture
 
 FFmpegFluent is a fluent C# DSL that shells out to the `ffmpeg`/`ffprobe` CLI - no native
