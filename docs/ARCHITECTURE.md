@@ -69,8 +69,9 @@ Almost every type `X` has up to three siblings, generated per a fixed convention
 - `XExtensions.cs` - fluent convenience/factory extension methods.
 - `XJsonExtensions.cs` - `ToJson`/`FromJson` round-tripping via `System.Text.Json`.
 - `XValidation.cs` (only for `FFmpegCommand`, `FFmpegProgress`, `HardwareAccelOptions`,
-  `ThumbnailPreset`) - `Validate()` returning a list of human-readable problems instead of
-  throwing.
+  `ThumbnailPreset`, `AudioOptions`, `VideoOptions`) - `Validate()` returning a list of
+  human-readable problems instead of throwing. `AudioOptions` and `VideoOptions` share
+  `FFmpegOptionsValidationException`, and `BitrateFormat` is the common bitrate parser.
 
 `FFmpegCommandValidation` reaches into `FFmpegCommand`'s `internal` fields (`_inputs`,
 `_outputs`, `_filterGraph`) - that is why those fields are `internal` rather than `private`.
