@@ -1,0 +1,36 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up .NET SDK
+        uses: actions/setup-dotnet@v4
+        with:
+          # Both csproj files target net10.0 and there is no global.json.
+          dotnet-version: '10.0.x'
+
+      - name: Restore
+        run: dotnet restore test/FFmpegFluent.Tests.csproj
+
+      - name: Build library
+        run: dotnet build --no-restore -c Release
+
+      - name: Build test project
+        run: dotnet build test/FFmpegFluent.Tests.csproj --no-restore -c Release
+
+      - name: Test
+        run: dotnet test test/FFmpegFluent.Tests.csproj --no-build -c Release --verbosity normal
