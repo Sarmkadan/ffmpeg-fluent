@@ -340,3 +340,6 @@ string[] arguments = preset.BuildArguments();
 // Perform the speed adjustment.
 preset.Run();
 ```
+
+## License
+FFmpegFluent is released under the [MIT License](LICENSE).
