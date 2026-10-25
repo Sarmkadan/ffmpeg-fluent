@@ -16,12 +16,12 @@ public sealed class OutputFile
     public string Path { get; }
 
     /// <summary>
-    /// Gets or sets the video options for the output file.
+    /// Gets the video options for the output file. Configure them through <see cref="WithVideo"/>.
     /// </summary>
     public VideoOptions Video { get; private set; } = new();
 
     /// <summary>
-    /// Gets or sets the audio options for the output file.
+    /// Gets the audio options for the output file. Configure them through <see cref="WithAudio"/>.
     /// </summary>
     public AudioOptions Audio { get; private set; } = new();
 
