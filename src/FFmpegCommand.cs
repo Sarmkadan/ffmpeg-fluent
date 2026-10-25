@@ -453,7 +453,14 @@ public sealed class FFmpegCommand
         {
             if (!process.HasExited)
             {
-                process.Kill(entireProcessTree: true);
+                try
+                {
+                    process.Kill(entireProcessTree: true);
+                }
+                catch (InvalidOperationException)
+                {
+                    // The process exited between the HasExited check and Kill; nothing left to stop.
+                }
             }
             await process.WaitForExitAsync().ConfigureAwait(false);
 
