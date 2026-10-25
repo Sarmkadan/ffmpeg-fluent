@@ -67,6 +67,12 @@ Executes the ffmpeg conversion synchronously on the calling thread (the method i
   `OperationCanceledException` if cancellation is requested.  
   `IOException` or `Win32Exception` if the ffmpeg executable cannot be found or started.
 
+### `public void Apply(FFmpegCommand command)`
+- **Purpose:** Adds this preset's inputs, filter graph and output options to an existing `FFmpegCommand`, so the preset can be combined with other command configuration.
+- **Parameters:** `command` – The command to configure.
+- **Return:** None.
+- **Throws:** `ArgumentNullException` if `command` is `null`.
+
 ## Usage
 
 ### Basic conversion with default settings

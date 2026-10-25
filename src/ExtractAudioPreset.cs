@@ -6,7 +6,7 @@ namespace FFmpegFluent;
 /// <summary>
         /// Represents a preset for extracting audio from a video file using FFmpeg.
         /// </summary>
-        public sealed class ExtractAudioPreset
+        public sealed class ExtractAudioPreset : IPreset
 {
     private readonly string _inputPath;
     private readonly string _outputPath;
@@ -77,6 +77,36 @@ namespace FFmpegFluent;
 
         _streamIndex = index;
         return this;
+    }
+
+    /// <summary>
+    /// Adds the audio input and output, with the configured codec, bitrate and stream mapping, to the command.
+    /// </summary>
+    /// <param name="command">The command to configure.</param>
+    public void Apply(FFmpegCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
+
+        command.AddInput(_inputPath);
+        command.AddOutput(_outputPath, output =>
+        {
+            if (_copyStream)
+            {
+                output.Option("acodec", "copy");
+            }
+            else if (_codec != null)
+            {
+                output.Option("acodec", _codec);
+            }
+
+            if (_bitrate != null)
+            {
+                output.Option("b:a", $"{_bitrate}k");
+            }
+
+            output.Option("map", _streamIndex != null ? $"0:{_streamIndex}" : "0:a");
+            output.Overwrite();
+        });
     }
 
     /// <summary>

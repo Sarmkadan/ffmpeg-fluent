@@ -64,6 +64,12 @@ Executes the thumbnail generation process asynchronously using the configured pr
   `FileNotFoundException` if the input file does not exist.  
   `InvalidOperationException` if the FFmpeg process fails or required arguments are missing.
 
+### `public void Apply(FFmpegCommand command)`
+- **Purpose:** Adds this preset's inputs, filter graph and output options to an existing `FFmpegCommand`, so the preset can be combined with other command configuration.
+- **Parameters:** `command` – The command to configure.
+- **Return:** None.
+- **Throws:** `ArgumentNullException` if `command` is `null`.
+
 ## Usage
 
 ```csharp

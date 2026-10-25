@@ -10,7 +10,7 @@ namespace FFmpegFluent;
 /// <summary>
         /// Represents a preset for creating GIFs using FFmpeg.
         /// </summary>
-        public sealed class GifPreset
+        public sealed class GifPreset : IPreset
 {
     private readonly string _inputPath;
     private readonly string _outputPath;
@@ -117,7 +117,22 @@ namespace FFmpegFluent;
         }
 
         args.Add("-filter_complex");
+        args.Add(BuildFilterComplex());
 
+        args.Add("-gifflags");
+        args.Add("+transdiff");
+
+        args.Add(_outputPath);
+
+        return args.ToArray();
+    }
+
+    /// <summary>
+    /// Builds the filter graph that scales, samples and palettizes the input.
+    /// </summary>
+    /// <returns>The filter graph string.</returns>
+    private string BuildFilterComplex()
+    {
         var preFilters = new System.Collections.Generic.List<string>();
 
         if (_width.HasValue)
@@ -131,18 +146,37 @@ namespace FFmpegFluent;
         // Linear filters are comma-chained; labeled palette segments are separate
         // chains and must be joined with ';' (which also requires -filter_complex,
         // since -vf only accepts a single linear chain).
-        var filterComplex = string.Join(",", preFilters)
+        return string.Join(",", preFilters)
             + ";[s0]palettegen=stats_mode=diff[p]"
             + ";[s1][p]paletteuse";
+    }
 
-        args.Add(filterComplex);
+    /// <summary>
+    /// Adds the GIF input and output, with the palette filter graph and the configured range, to the command.
+    /// </summary>
+    /// <param name="command">The command to configure.</param>
+    public void Apply(FFmpegCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
 
-        args.Add("-gifflags");
-        args.Add("+transdiff");
+        command.AddInput(_inputPath);
+        command.WithFilterGraph(graph => graph.AddFilter(BuildFilterComplex()));
+        command.AddOutput(_outputPath, output =>
+        {
+            output.Overwrite();
 
-        args.Add(_outputPath);
+            if (_start.HasValue)
+            {
+                output.Option("ss", _start.Value.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
 
-        return args.ToArray();
+            if (_duration.HasValue)
+            {
+                output.Option("t", _duration.Value.TotalSeconds.ToString(System.Globalization.CultureInfo.InvariantCulture));
+            }
+
+            output.Option("gifflags", "+transdiff");
+        });
     }
 
     /// <summary>
