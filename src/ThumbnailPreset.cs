@@ -10,7 +10,7 @@ namespace FFmpegFluent
     /// <summary>
     /// Preset for extracting a single preview frame (thumbnail) from a video file.
     /// </summary>
-    public sealed class ThumbnailPreset
+    public sealed class ThumbnailPreset : IPreset
     {
         private readonly string _inputPath;
         private readonly string _outputPath;
@@ -57,6 +57,45 @@ namespace FFmpegFluent
         {
             _useSmartSelect = true;
             return this;
+        }
+
+        /// <summary>
+        /// Adds the thumbnail input and single-frame output, with the configured seek and filter options, to the command.
+        /// </summary>
+        /// <param name="command">The command to configure.</param>
+        public void Apply(FFmpegCommand command)
+        {
+            ArgumentNullException.ThrowIfNull(command);
+
+            command.AddInput(_inputPath);
+            command.AddOutput(_outputPath, output =>
+            {
+                output.Overwrite();
+
+                if (_position.HasValue)
+                {
+                    output.Option("ss", _position.Value.ToString(@"hh\:mm\:ss\.fff"));
+                }
+
+                var filters = new List<string>();
+                if (_useSmartSelect)
+                {
+                    filters.Add("thumbnail");
+                }
+
+                if (_size.HasValue)
+                {
+                    var (w, h) = _size.Value;
+                    filters.Add($"scale={w}:{h}");
+                }
+
+                if (filters.Count > 0)
+                {
+                    output.Option("vf", string.Join(",", filters));
+                }
+
+                output.Option("frames:v", "1");
+            });
         }
 
         /// <summary>

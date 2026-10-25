@@ -107,6 +107,18 @@ public sealed class FFmpegCommand
     }
 
     /// <summary>
+    /// Applies a preset's inputs, outputs and options to the command.
+    /// </summary>
+    /// <param name="preset">The preset to apply.</param>
+    /// <returns>The current instance of the <see cref="FFmpegCommand"/> class.</returns>
+    public FFmpegCommand ApplyPreset(IPreset preset)
+    {
+        ArgumentNullException.ThrowIfNull(preset);
+        preset.Apply(this);
+        return this;
+    }
+
+    /// <summary>
     /// Adds an output file to the command.
     /// </summary>
     /// <param name="path">The path to the output file.</param>

@@ -9,7 +9,7 @@ namespace FFmpegFluent;
 /// Preset for trimming a video file using FFmpeg.
 /// Supports both stream copy mode (fast, no re-encoding) and re-encoding mode.
 /// </summary>
-public sealed class TrimPreset
+public sealed class TrimPreset : IPreset
 {
     private readonly string _inputPath;
     private readonly string _outputPath;
@@ -88,6 +88,17 @@ public sealed class TrimPreset
     public FFmpegCommand Build()
     {
         var command = FFmpegCommand.Create();
+        Apply(command);
+        return command;
+    }
+
+    /// <summary>
+    /// Adds the trim input and output, with the configured seek, duration and codec options, to the command.
+    /// </summary>
+    /// <param name="command">The command to configure.</param>
+    public void Apply(FFmpegCommand command)
+    {
+        ArgumentNullException.ThrowIfNull(command);
 
         // Add input file
         command.AddInput(_inputPath, input =>
@@ -128,8 +139,6 @@ public sealed class TrimPreset
                 }
             }
         });
-
-        return command;
     }
 
     /// <summary>

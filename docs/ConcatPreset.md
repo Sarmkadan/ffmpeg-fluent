@@ -40,6 +40,12 @@ Executes the concatenation operation asynchronously. The method writes the conca
 - **Returns:** A `Task` that completes when the FFmpeg process exits successfully.
 - **Throws:** `InvalidOperationException` if no inputs have been added or no output file has been configured. `FFmpegException` if the underlying FFmpeg process returns a non-zero exit code.
 
+### `public void Apply(FFmpegCommand command)`
+- **Purpose:** Adds the concatenation inputs, filter and output to an existing `FFmpegCommand`. `Build()` is equivalent to creating a command and calling `Apply` on it.
+- **Parameters:** `command` – The command to configure.
+- **Return:** None.
+- **Throws:** `ArgumentNullException` if `command` is `null`; `InvalidOperationException` if fewer than two inputs were added or no output path is set.
+
 ## Usage
 
 ### Example 1: Simple Stream Copy Concatenation

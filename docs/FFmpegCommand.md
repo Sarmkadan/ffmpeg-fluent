@@ -43,6 +43,12 @@ The `FFmpegCommand` class provides a fluent interface for constructing FFmpeg co
   - `ArgumentNullException` if `outputFile` is `null`.
   - `ArgumentException` if `outputFile` is empty or consists only of whitespace.
 
+### ApplyPreset
+- **Purpose:** Applies an `IPreset` implementation's inputs, outputs and options to this command.
+- **Parameters:** `preset` – The preset to apply.
+- **Return:** The same `FFmpegCommand` instance to allow method chaining.
+- **Throws:** `ArgumentNullException` if `preset` is `null`; any exception thrown by the preset's `Apply` method.
+
 ### GlobalOption
 - **Signature**: `public FFmpegCommand GlobalOption(string option, params string[] arguments)`
 - **Purpose**: Adds a global FFmpeg option that affects the entire command (e.g., `-y`, `-loglevel`, `-hide_banner`).

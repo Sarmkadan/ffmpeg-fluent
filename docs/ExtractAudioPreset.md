@@ -83,6 +83,12 @@ Executes the audio extraction process asynchronously.
 - `InvalidOperationException`: If required arguments are missing or invalid.
 - `OperationCanceledException`: If the operation is canceled via the cancellation token.
 
+### `public void Apply(FFmpegCommand command)`
+- **Purpose:** Adds this preset's inputs, filter graph and output options to an existing `FFmpegCommand`, so the preset can be combined with other command configuration.
+- **Parameters:** `command` – The command to configure.
+- **Return:** None.
+- **Throws:** `ArgumentNullException` if `command` is `null`.
+
 ## Usage
 
 ### Example 1: Extract with specific codec and bitrate

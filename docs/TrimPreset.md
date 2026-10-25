@@ -58,6 +58,12 @@ The `TrimPreset` type provides a fluent API for defining trim operations (start 
 - **Return:** None.
 - **Throws:** `FFmpegException` if the FFmpeg process fails to start or returns a non‑zero exit code; `InvalidOperationException` if the configuration is invalid (same checks as `Build()`).
 
+### `public void Apply(FFmpegCommand command)`
+- **Purpose:** Adds this preset's inputs, filter graph and output options to an existing `FFmpegCommand`, so the preset can be combined with other command configuration.
+- **Parameters:** `command` – The command to configure.
+- **Return:** None.
+- **Throws:** `ArgumentNullException` if `command` is `null`.
+
 ## Usage
 
 ```csharp

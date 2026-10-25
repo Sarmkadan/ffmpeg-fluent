@@ -41,7 +41,7 @@ namespace FFmpegFluent
     /// await preset.RunAsync();
     /// </code>
     /// </example>
-    public sealed class ConcatPreset
+    public sealed class ConcatPreset : IPreset
     {
         private const string DefaultVideoCodec = "libx264";
         private const string DefaultAudioCodec = "aac";
@@ -152,12 +152,24 @@ namespace FFmpegFluent
         /// <exception cref="InvalidOperationException">Fewer than two inputs were added, or no output was set.</exception>
         public FFmpegCommand Build()
         {
+            var command = FFmpegCommand.Create();
+            Apply(command);
+            return command;
+        }
+
+        /// <summary>
+        /// Adds the concatenation inputs, filter and output to the command.
+        /// </summary>
+        /// <param name="command">The command to configure.</param>
+        /// <exception cref="InvalidOperationException">Fewer than two inputs were added, or no output was set.</exception>
+        public void Apply(FFmpegCommand command)
+        {
+            ArgumentNullException.ThrowIfNull(command);
             if (_inputs.Count < 2)
                 throw new InvalidOperationException("At least two input files are required for concatenation.");
             if (string.IsNullOrWhiteSpace(_outputPath))
                 throw new InvalidOperationException("An output path is required for concatenation.");
 
-            var command = FFmpegCommand.Create();
             foreach (var input in _inputs)
                 command.AddInput(input);
 
@@ -177,8 +189,6 @@ namespace FFmpegFluent
             {
                 command.AddOutput(_outputPath, output => output.Option("c", CopyCodec));
             }
-
-            return command;
         }
 
         /// <summary>
